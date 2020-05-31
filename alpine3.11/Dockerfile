@@ -16,7 +16,8 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${LIBTORRENT_VER//./_}"
+    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${LIBTORRENT_VER//./_}" || \
+    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent_${LIBTORRENT_VER//./_}"
 
 RUN \
     echo "**** install python-deps ****" && \
