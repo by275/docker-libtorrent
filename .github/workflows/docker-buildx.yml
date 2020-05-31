@@ -10,78 +10,6 @@ env:
   LIBTORRENT_VER: "1.2.6"
 
 jobs:
-  alpine39-py2:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
-    steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=distro::alpine3.9
-          echo ::set-output name=pymver::2
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@master
-        with:
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
-          dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
-          buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
-      -
-        name: Send Notification
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          description: |
-            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
-
-  alpine39-py3:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
-    steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=distro::alpine3.9
-          echo ::set-output name=pymver::3
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@master
-        with:
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
-          dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
-          buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
-      -
-        name: Send Notification
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          description: |
-            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
-
   alpine310-py2:
     runs-on: ubuntu-latest
     if: github.actor == github.event.repository.owner.login
@@ -226,14 +154,49 @@ jobs:
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
             Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
+  alpine312-py3:
+    runs-on: ubuntu-latest
+    if: github.actor == github.event.repository.owner.login
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        run: |
+          echo ::set-output name=distro::alpine3.12
+          echo ::set-output name=pymver::3
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Run Buildx
+        uses: ilteoood/docker_buildx@master
+        with:
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
+          buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
+          publish: true
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerHubUser: ${{ env.DOCKERHUB_USER }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+
   make-release:
     needs:
-      - alpine39-py2
-      - alpine39-py3
       - alpine310-py2
       - alpine310-py3
       - alpine311-py2
       - alpine311-py3
+      - alpine312-py3
     runs-on: ubuntu-latest
     if: github.actor == github.event.repository.owner.login
     steps:
@@ -242,7 +205,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.9-py2 alpine3.9-py3 alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3"
+          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3"
       -
         name: Checkout
         uses: actions/checkout@v2
