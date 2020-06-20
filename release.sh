@@ -18,7 +18,12 @@ for TAG in $TAGS; do
         arch=$(echo $manifest | base64 --decode | jq -r '.platform.architecture')
         digest=$(echo $manifest | base64 --decode | jq -r '.digest')
         file="/release/libtorrent-${LIBTORRENT_VER}-${TAG}-$arch.tar.gz"
-        docker run --rm -v $(pwd)/release:/release ${BASE_IMAGE}@${digest} \
-            sh -c "apk add tar && tar -C /libtorrent-build -zcvf $file usr && chown $U_ID:$G_ID $file"
+        if [[ $TAG == "alpine"* ]]; then
+            docker run --rm -v $(pwd)/release:/release ${BASE_IMAGE}@${digest} \
+                sh -c "apk add tar && tar -C /libtorrent-build -zcvf $file usr && chown $U_ID:$G_ID $file"
+        elif [[ $TAG == "ubuntu"* ]]; then
+            docker run --rm -v $(pwd)/release:/release ${BASE_IMAGE}@${digest} \
+                sh -c "tar -C /libtorrent-build -zcvf $file usr && chown $U_ID:$G_ID $file"
+        fi
     done
 done

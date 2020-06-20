@@ -50,13 +50,13 @@ RUN \
         BOOST_LIB_DIR="arm-linux-gnueabihf"; \
     fi && \
     cd /tmp/libtorrent && \
-    ./autotool.sh && \
     PYTHON=/usr/bin/python${PYTHON_VERSION} \
     PYTHON_INSTALL_PARAMS='--prefix=$(DESTDIR)$(prefix) --install-lib=$(DESTDIR)$(prefix)'${PYTHON_INSTALL_LIBDIR} \
-    ./configure \
+    ./bootstrap.sh \
         --prefix=/usr \
         --libdir="/usr/lib/${BOOST_LIB_DIR}" \
         --enable-python-binding \
+        --disable-static \
         --with-libiconv \
         --with-boost-python=$(if [ ${PY_MAJOR_VER} = "2" ]; then echo "boost_python-py27"; else echo "boost_python3-py36"; fi) \
         --with-boost-libdir="/usr/lib/${BOOST_LIB_DIR}" && \
