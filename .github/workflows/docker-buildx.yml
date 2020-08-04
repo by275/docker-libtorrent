@@ -7,7 +7,7 @@ on:
 env:
   DOCKERHUB_USER: wiserain
   DOCKERHUB_REPO: libtorrent
-  LIBTORRENT_VER: "1.2.7"
+  LIBTORRENT_VER: "1.2.8"
 
 jobs:
   alpine310-py2:
