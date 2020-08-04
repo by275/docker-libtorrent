@@ -24,9 +24,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    _LIBTORRENT_VER="$(echo "${LIBTORRENT_VER}" | sed 's/\./\_/g')" && \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${_LIBTORRENT_VER}" || \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent_${_LIBTORRENT_VER}"
+    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${LIBTORRENT_VER}"
 
 RUN \
     echo "**** install python-deps ****" && \
