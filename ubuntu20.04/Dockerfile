@@ -5,13 +5,12 @@ ARG PY_MAJOR_VER
 ARG LIBTORRENT_VER
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG CMAKE_VER=3.18.3
 
 RUN \
     echo "**** install build-deps ****" && \
     apt-get update && \
     apt-get install -yq \
-        autoconf \
-        automake \
         build-essential \
         git \
         libboost-chrono-dev \
@@ -19,12 +18,28 @@ RUN \
         libboost-random-dev \
         libboost-system-dev \
         libssl-dev \
-        libtool \
         pkg-config
 
 RUN \
+    echo "**** install cmake ****" && \
+    if [ $TARGETARCH = "arm" ]; then \
+        apt-get install -yq wget && \
+        mkdir /tmp/cmake -p && \
+        cd /tmp/cmake && \
+        wget https://cmake.org/files/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz --no-check-certificate && \
+        tar -xzvf cmake-${CMAKE_VER}.tar.gz --strip-components=1 && \
+        export CFLAGS="-D_FILE_OFFSET_BITS=64" && \
+        export CXXFLAGS="-D_FILE_OFFSET_BITS=64" && \
+        ./bootstrap --prefix=/usr && \
+        make -j$(nproc) && \
+        make install; \
+    else \
+        apt-get install -yq cmake; \
+    fi
+
+RUN \
     echo "**** clone source ****" && \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${LIBTORRENT_VER}"
+    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}"
 
 RUN \
     echo "**** install python-deps ****" && \
@@ -39,7 +54,6 @@ RUN \
     echo "**** build libtorrent ****" && \
     PYTHON_VERSION=$(python${PY_MAJOR_VER} -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
     _PYTHON_VERSION="$(echo "${PYTHON_VERSION}" | sed 's/\.//g')" && \
-    PYTHON_INSTALL_LIBDIR="$(python${PY_MAJOR_VER} -c 'import sys; print(sys.path[-1]);' | sed 's/\/usr//g')" && \
     if [ $TARGETARCH = "amd64" ]; then \
         BOOST_LIB_DIR="x86_64-linux-gnu"; \
     elif [ $TARGETARCH = "arm64" ]; then \
@@ -47,19 +61,22 @@ RUN \
     elif [ $TARGETARCH = "arm" ]; then \
         BOOST_LIB_DIR="arm-linux-gnueabihf"; \
     fi && \
-    cd /tmp/libtorrent && \
-    PYTHON=/usr/bin/python${PYTHON_VERSION} \
-    PYTHON_INSTALL_PARAMS='--prefix=$(DESTDIR)$(prefix) --install-lib=$(DESTDIR)$(prefix)'${PYTHON_INSTALL_LIBDIR} \
-    ./bootstrap.sh \
-        --prefix=/usr \
-        --libdir="/usr/lib/${BOOST_LIB_DIR}" \
-        --enable-python-binding \
-        --disable-static \
-        --with-libiconv \
-        --with-boost-python="boost_python${_PYTHON_VERSION}" \
-        --with-boost-libdir="/usr/lib/${BOOST_LIB_DIR}" && \
+    mkdir /tmp/libtorrent/_build -p && \
+    cd /tmp/libtorrent/_build && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="/usr" \
+        -DCMAKE_INSTALL_LIBDIR="lib" \
+        -Dpython-bindings=ON \
+        -Dboost-python-module-name="python${_PYTHON_VERSION}" \
+        -DPython_ADDITIONAL_VERSIONS="${PYTHON_VERSION}" \
+        -DBoost_LIBRARY_DIR="/usr/lib/${BOOST_LIB_DIR}" \
+        "../" && \
     make VERBOSE=1 -j$(nproc) && \
-    make DESTDIR=/libtorrent-build install
+    echo "**** install libtorrent ****" && \
+    cd /tmp/libtorrent && \
+    make -C "_build" DESTDIR=/libtorrent-build install && \
+    rm -rf /libtorrent-build/usr/lib/cmake
 
 FROM ubuntu
 LABEL maintainer "wiserain"
