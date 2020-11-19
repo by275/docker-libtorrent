@@ -16,7 +16,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${LIBTORRENT_VER}"
+    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
     echo "**** install python-deps ****" && \
@@ -38,7 +38,6 @@ RUN \
         -DCMAKE_INSTALL_LIBDIR="lib" \
         -Dpython-bindings=ON \
         -Dboost-python-module-name="python${PYTHON_VERSION//./}" \
-        -DPython_ADDITIONAL_VERSIONS="${PYTHON_VERSION}" \
         "../" && \
     make VERBOSE=1 -j$(nproc) && \
     echo "**** install libtorrent ****" && \
@@ -46,6 +45,36 @@ RUN \
     make -C "_build" DESTDIR=/libtorrent-build install && \
     rm -rf /libtorrent-build/usr/lib/cmake
 
+# 
+# TEST
+# 
+FROM alpine AS test
+
+ARG LIBTORRENT_VER
+ARG PY_MAJOR_VER
+
+COPY --from=build-base /libtorrent-build/usr/lib/ /usr/lib/
+
+RUN \
+    echo "**** install runtime packages ****" && \
+    apk add --no-cache \
+        libstdc++ \
+        boost-system \
+        boost-python${PY_MAJOR_VER} \
+        python${PY_MAJOR_VER}
+
+RUN \
+    BUILD_VER=$(python${PY_MAJOR_VER} -c 'import libtorrent as lt; print(lt.version)') && \
+    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+        echo "Successfully built with version: ${BUILD_VER}"; \
+    else \
+        echo "Something went wrong: ${BUILD_VER}"; \
+        exit 1; \
+    fi
+
+# 
+# RELEASE
+# 
 FROM alpine
 LABEL maintainer "wiserain"
 COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/

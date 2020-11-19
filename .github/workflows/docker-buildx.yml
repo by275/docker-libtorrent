@@ -1,13 +1,18 @@
 name: docker-buildx
 
 on:
-  watch:
-    types: [started]
+  push:
+    branches:
+      - '*'
+      - '!master'   # excludes master
+    tags:
+      - '*'
+  pull_request:
 
 env:
   DOCKERHUB_USER: wiserain
   DOCKERHUB_REPO: libtorrent
-  LIBTORRENT_VER: "1.2.10"
+  LIBTORRENT_VER: "1.2.11"
 
 jobs:
   alpine310-py2:
@@ -28,7 +33,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -44,7 +49,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   alpine310-py3:
     runs-on: ubuntu-latest
@@ -64,7 +69,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -80,7 +85,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   alpine311-py2:
     runs-on: ubuntu-latest
@@ -100,7 +105,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -116,7 +121,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   alpine311-py3:
     runs-on: ubuntu-latest
@@ -136,7 +141,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -152,7 +157,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   alpine312-py3:
     runs-on: ubuntu-latest
@@ -172,7 +177,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -188,7 +193,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   ubuntu1804-py2:
     runs-on: ubuntu-latest
@@ -208,7 +213,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -224,7 +229,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   ubuntu1804-py3:
     runs-on: ubuntu-latest
@@ -244,7 +249,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -260,7 +265,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   ubuntu1910-py2:
     runs-on: ubuntu-latest
@@ -280,7 +285,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -296,7 +301,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   ubuntu1910-py3:
     runs-on: ubuntu-latest
@@ -316,7 +321,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -332,7 +337,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   ubuntu2004-py3:
     runs-on: ubuntu-latest
@@ -352,7 +357,7 @@ jobs:
         uses: ilteoood/docker_buildx@master
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
@@ -368,7 +373,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: latest-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }},${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
   make-release:
     needs:

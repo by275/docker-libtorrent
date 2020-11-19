@@ -24,7 +24,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "libtorrent-${LIBTORRENT_VER}"
+    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
     echo "**** install python-deps ****" && \
@@ -61,6 +61,41 @@ RUN \
     make VERBOSE=1 -j$(nproc) && \
     make DESTDIR=/libtorrent-build install
 
+# 
+# TEST
+# 
+FROM ubuntu AS test
+
+ARG LIBTORRENT_VER
+ARG PY_MAJOR_VER
+ARG TARGETARCH
+ARG DEBIAN_FRONTEND="noninteractive"
+
+COPY --from=build-base /libtorrent-build/usr/lib/ /usr/lib/
+
+RUN \
+    echo "**** install runtime packages ****" && \
+    apt-get update && \
+    apt-get install -yq \
+        libboost-chrono-dev \
+        libboost-python-dev \
+        libboost-random-dev \
+        libboost-system-dev \
+        libboost-tools-dev \
+        python$(if [ ${PY_MAJOR_VER} = "3" ]; then echo 3; fi)-minimal
+
+RUN \
+    BUILD_VER=$(python${PY_MAJOR_VER} -c 'import libtorrent as lt; print(lt.version)') && \
+    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+        echo "Successfully built with version: ${BUILD_VER}"; \
+    else \
+        echo "Something went wrong: ${BUILD_VER}"; \
+        exit 1; \
+    fi
+
+# 
+# RELEASE
+# 
 FROM ubuntu
 LABEL maintainer "wiserain"
 COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
