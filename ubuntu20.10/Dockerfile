@@ -1,11 +1,9 @@
 FROM ubuntu:20.10 AS ubuntu
 FROM ubuntu AS build-base
 
-ARG PY_MAJOR_VER
 ARG LIBTORRENT_VER
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG CMAKE_VER=3.18.3
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -18,42 +16,40 @@ RUN \
         libboost-random-dev \
         libboost-system-dev \
         libssl-dev \
-        pkg-config
+        `# python-deps` \
+        python3-setuptools python3-all-dev
 
+ENV CMAKE_VER="3.19.0"
 RUN \
-    echo "**** install cmake ****" && \
+    echo "**** install cmake v${CMAKE_VER} ****" && \
+    apt-get update && \
+    apt-get install -yq \
+        build-essential \
+        libssl-dev \
+        wget && \
     if [ $TARGETARCH = "arm" ]; then \
-        apt-get install -yq wget && \
-        mkdir /tmp/cmake -p && \
-        cd /tmp/cmake && \
-        wget https://cmake.org/files/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz --no-check-certificate && \
-        tar -xzvf cmake-${CMAKE_VER}.tar.gz --strip-components=1 && \
         export CFLAGS="-D_FILE_OFFSET_BITS=64" && \
-        export CXXFLAGS="-D_FILE_OFFSET_BITS=64" && \
-        ./bootstrap --prefix=/usr && \
-        make -j$(nproc) && \
-        make install; \
-    else \
-        apt-get install -yq cmake; \
-    fi
+        export CXXFLAGS="-D_FILE_OFFSET_BITS=64"; \
+    fi && \
+    cd $(mktemp -d) && \
+    wget https://cmake.org/files/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz --no-check-certificate && \
+    tar -xzf cmake-${CMAKE_VER}.tar.gz --strip-components=1 && \
+    ./bootstrap \
+        --prefix=/usr \
+        --parallel=$(nproc) \
+        -- \
+        -DCMAKE_BUILD_TYPE:STRING=Release && \
+    make -j$(nproc) && \
+    make install
 
 RUN \
     echo "**** clone source ****" && \
-    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}"
-
-RUN \
-    echo "**** install python-deps ****" && \
-    if [ $PY_MAJOR_VER = "2" ]; then \
-        pydeps="python-setuptools python-all-dev"; \
-    elif [ $PY_MAJOR_VER = "3" ]; then \
-        pydeps="python3-setuptools python3-all-dev"; \
-    fi && \
-    apt-get install -yq ${pydeps}
+    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
     echo "**** build libtorrent ****" && \
-    PYTHON_VERSION=$(python${PY_MAJOR_VER} -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
-    _PYTHON_VERSION="$(echo "${PYTHON_VERSION}" | sed 's/\.//g')" && \
+    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    _PY_VER="$(echo "${PY_VER}" | sed 's/\.//g')" && \
     if [ $TARGETARCH = "amd64" ]; then \
         BOOST_LIB_DIR="x86_64-linux-gnu"; \
     elif [ $TARGETARCH = "arm64" ]; then \
@@ -66,10 +62,9 @@ RUN \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="/usr" \
-        -DCMAKE_INSTALL_LIBDIR="lib" \
+        -DCMAKE_INSTALL_LIBDIR="lib/${BOOST_LIB_DIR}" \
         -Dpython-bindings=ON \
-        -Dboost-python-module-name="python${_PYTHON_VERSION}" \
-        -DPython_ADDITIONAL_VERSIONS="${PYTHON_VERSION}" \
+        -Dboost-python-module-name="python${_PY_VER}" \
         -DBoost_LIBRARY_DIR="/usr/lib/${BOOST_LIB_DIR}" \
         "../" && \
     make VERBOSE=1 -j$(nproc) && \
@@ -78,6 +73,40 @@ RUN \
     make -C "_build" DESTDIR=/libtorrent-build install && \
     rm -rf /libtorrent-build/usr/lib/cmake
 
+# 
+# TEST
+# 
+FROM ubuntu AS test
+
+ARG LIBTORRENT_VER
+ARG TARGETARCH
+ARG DEBIAN_FRONTEND="noninteractive"
+
+COPY --from=build-base /libtorrent-build/usr/ /usr/
+
+RUN \
+    echo "**** install runtime packages ****" && \
+    apt-get update && \
+    apt-get install -yq \
+        libboost-chrono-dev \
+        libboost-python-dev \
+        libboost-random-dev \
+        libboost-system-dev \
+        libboost-tools-dev \
+        python3-minimal
+
+RUN \
+    BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
+    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+        echo "Successfully built with version: ${BUILD_VER}"; \
+    else \
+        echo "Something went wrong: ${BUILD_VER}"; \
+        exit 1; \
+    fi
+
+# 
+# RELEASE
+# 
 FROM ubuntu
 LABEL maintainer "wiserain"
-COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
+COPY --from=build-base /libtorrent-build/usr/ /libtorrent-build/usr/

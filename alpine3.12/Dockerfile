@@ -1,35 +1,26 @@
 FROM alpine:3.12 AS alpine
 FROM alpine AS build-base
 
-ARG PY_MAJOR_VER
 ARG LIBTORRENT_VER
 
 RUN \
     echo "**** install build-deps ****" && \
     apk add --no-cache --update \
         build-base \
-        `# including file fortify-headers g++ gcc libc-dev make` \
-        openssl-dev \
         boost-dev \
+        cmake \
         git \
-        cmake
+        openssl-dev \
+        `# python-deps` \
+        boost-python3 py3-setuptools python3-dev
 
 RUN \
     echo "**** clone source ****" && \
-    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}"
-
-RUN \
-    echo "**** install python-deps ****" && \
-    if [ $PY_MAJOR_VER = "2" ]; then \
-        pydeps="boost-python2 py2-setuptools python2-dev"; \
-    elif [ $PY_MAJOR_VER = "3" ]; then \
-        pydeps="boost-python3 py3-setuptools python3-dev"; \
-    fi && \
-    apk add --no-cache --update ${pydeps}
+    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
     echo "**** build libtorrent ****" && \
-    PYTHON_VERSION=$(python${PY_MAJOR_VER} -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
     mkdir /tmp/libtorrent/_build -p && \
     cd /tmp/libtorrent/_build && \
     cmake \
@@ -37,8 +28,7 @@ RUN \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="lib" \
         -Dpython-bindings=ON \
-        -Dboost-python-module-name="python${PYTHON_VERSION//./}" \
-        -DPython_ADDITIONAL_VERSIONS="${PYTHON_VERSION}" \
+        -Dboost-python-module-name="python${PY_VER//./}" \
         "../" && \
     make VERBOSE=1 -j$(nproc) && \
     echo "**** install libtorrent ****" && \
@@ -46,6 +36,35 @@ RUN \
     make -C "_build" DESTDIR=/libtorrent-build install && \
     rm -rf /libtorrent-build/usr/lib/cmake
 
+# 
+# TEST
+# 
+FROM alpine AS test
+
+ARG LIBTORRENT_VER
+
+COPY --from=build-base /libtorrent-build/usr/ /usr/
+
+RUN \
+    echo "**** install runtime packages ****" && \
+    apk add --no-cache \
+        libstdc++ \
+        boost-system \
+        boost-python3 \
+        python3
+
+RUN \
+    BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
+    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+        echo "Successfully built with version: ${BUILD_VER}"; \
+    else \
+        echo "Something went wrong: ${BUILD_VER}"; \
+        exit 1; \
+    fi
+
+# 
+# RELEASE
+# 
 FROM alpine
 LABEL maintainer "wiserain"
-COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
+COPY --from=build-base /libtorrent-build/usr/ /libtorrent-build/usr/
