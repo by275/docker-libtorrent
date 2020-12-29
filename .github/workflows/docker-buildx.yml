@@ -37,8 +37,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -73,8 +73,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -109,8 +109,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -145,8 +145,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -181,8 +181,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -217,8 +217,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -253,8 +253,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -289,8 +289,8 @@ jobs:
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
           publish: true
           platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerHubUser: ${{ env.DOCKERHUB_USER }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
