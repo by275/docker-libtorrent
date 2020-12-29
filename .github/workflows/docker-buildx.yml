@@ -302,6 +302,42 @@ jobs:
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
             Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
 
+  ubuntu2010-py3:
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        run: |
+          echo ::set-output name=distro::ubuntu20.10
+          echo ::set-output name=pymver::3
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Run Buildx
+        uses: ilteoood/docker_buildx@1.1.0
+        with:
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
+          buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=${{ steps.vars.outputs.pymver }}
+          publish: true
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+
   make-release:
     needs:
       - alpine310-py2
@@ -312,6 +348,7 @@ jobs:
       - ubuntu1804-py2
       - ubuntu1804-py3
       - ubuntu2004-py3
+      - ubuntu2010-py3
     runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
@@ -320,7 +357,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 ubuntu18.04-py2 ubuntu18.04-py3 ubuntu20.04-py3"
+          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 ubuntu18.04-py2 ubuntu18.04-py3 ubuntu20.04-py3 ubuntu20.10-py3"
       -
         name: Checkout
         uses: actions/checkout@v2
