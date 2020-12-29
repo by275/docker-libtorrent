@@ -5,10 +5,7 @@ on:
     types: [started]
   push:
     branches:
-      - '*'
-      - '!master'   # excludes master
-    tags:
-      - '*'
+      - 'master'
   pull_request:
 
 env:
@@ -18,8 +15,8 @@ env:
 
 jobs:
   alpine310:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
@@ -56,7 +53,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -69,8 +66,8 @@ jobs:
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   alpine311:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
@@ -107,7 +104,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -120,8 +117,8 @@ jobs:
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   alpine312:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
@@ -146,44 +143,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          description: |
-            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags:
-              - latest-${{ steps.vars.outputs.distro }}-py3
-              - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
-
-  ubuntu1910:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
-    steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=distro::ubuntu19.10
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
-        with:
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py3,${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
-          dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
-          buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
-      -
-        name: Send Notification
-        uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -194,8 +154,8 @@ jobs:
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   ubuntu2004:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
@@ -220,7 +180,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -231,8 +191,8 @@ jobs:
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   ubuntu2010:
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
@@ -257,7 +217,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -272,18 +232,17 @@ jobs:
       - alpine310
       - alpine311
       - alpine312
-      - ubuntu1910
       - ubuntu2004
       - ubuntu2010
-    runs-on: ubuntu-latest
-    if: github.actor == github.event.repository.owner.login
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 ubuntu19.10-py3 ubuntu20.04-py3 ubuntu20.10-py3"
+          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 ubuntu20.04-py3 ubuntu20.10-py3"
           echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/wiserain/docker-libtorrent | jq -r .description)
       -
         name: Checkout
@@ -296,6 +255,7 @@ jobs:
       - 
         name: Create Release
         id: create_release
+        if: (github.event_name != 'pull_request')
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
@@ -307,19 +267,28 @@ jobs:
           prerelease: false
       - 
         name: Upload Assets to Release with a wildcard
+        if: (github.event_name != 'pull_request')
         uses: csexton/release-asset-action@v2
         with:
           pattern: "release/*.tar.gz"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-url: ${{ steps.create_release.outputs.upload_url }}
-      - 
-        name: push README to Dockerhub
-        uses: christian-korneck/update-container-description-action@v1
-        env:
-          DOCKER_USER: ${{ env.DOCKERHUB_USER }}
-          DOCKER_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Update Dockerhub description
+        if: (github.event_name != 'pull_request')
+        uses: peter-evans/dockerhub-description@v2
         with:
-          destination_container_repo: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          provider: dockerhub
-          short_description: ${{ steps.vars.outputs.github_desc }}
-          readme_file: 'README.md'
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+          repository: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+          short-description: ${{ steps.vars.outputs.github_desc }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ steps.vars.outputs.tags }}
