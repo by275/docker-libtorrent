@@ -1,7 +1,6 @@
 FROM ubuntu:18.04 AS ubuntu
 FROM ubuntu AS build-base
 
-ARG PY_MAJOR_VER
 ARG LIBTORRENT_VER
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -10,37 +9,47 @@ RUN \
     echo "**** install build-deps ****" && \
     apt-get update && \
     apt-get install -yq \
-        autoconf \
-        automake \
         build-essential \
         git \
         libboost-chrono-dev \
         libboost-python-dev \
         libboost-random-dev \
         libboost-system-dev \
-        libboost-tools-dev \
         libssl-dev \
-        libtool \
-        pkg-config
+        `# python-deps` \
+        python3-setuptools python3-all-dev
+
+ENV CMAKE_VER="3.19.2"
+RUN \
+    echo "**** install cmake v${CMAKE_VER} ****" && \
+    apt-get update && \
+    apt-get install -yq \
+        build-essential \
+        libssl-dev \
+        wget && \
+    if [ $TARGETARCH = "arm" ]; then \
+        export CFLAGS="-D_FILE_OFFSET_BITS=64" && \
+        export CXXFLAGS="-D_FILE_OFFSET_BITS=64"; \
+    fi && \
+    cd $(mktemp -d) && \
+    wget https://cmake.org/files/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz --no-check-certificate && \
+    tar -xzf cmake-${CMAKE_VER}.tar.gz --strip-components=1 && \
+    ./bootstrap \
+        --prefix=/usr \
+        --parallel=$(nproc) \
+        -- \
+        -DCMAKE_BUILD_TYPE:STRING=Release && \
+    make -j$(nproc) && \
+    make install
 
 RUN \
     echo "**** clone source ****" && \
     git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
-    echo "**** install python-deps ****" && \
-    if [ $PY_MAJOR_VER = "2" ]; then \
-        pydeps="python-setuptools python-all-dev"; \
-    elif [ $PY_MAJOR_VER = "3" ]; then \
-        pydeps="python3-setuptools python3-all-dev"; \
-    fi && \
-    apt-get install -yq ${pydeps}
-
-RUN \
     echo "**** build libtorrent ****" && \
-    PYTHON_VERSION=$(python${PY_MAJOR_VER} -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
-    _PYTHON_VERSION="$(echo "${PYTHON_VERSION}" | sed 's/\.//g')" && \
-    PYTHON_INSTALL_LIBDIR="$(python${PY_MAJOR_VER} -c 'import sys; print(sys.path[-1]);' | sed 's/\/usr//g')" && \
+    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    _PY_VER="$(echo "${PY_VER}" | sed 's/\.//g')" && \
     if [ $TARGETARCH = "amd64" ]; then \
         BOOST_LIB_DIR="x86_64-linux-gnu"; \
     elif [ $TARGETARCH = "arm64" ]; then \
@@ -48,19 +57,20 @@ RUN \
     elif [ $TARGETARCH = "arm" ]; then \
         BOOST_LIB_DIR="arm-linux-gnueabihf"; \
     fi && \
-    cd /tmp/libtorrent && \
-    PYTHON=/usr/bin/python${PYTHON_VERSION} \
-    PYTHON_INSTALL_PARAMS='--prefix=$(DESTDIR)$(prefix) --install-lib=$(DESTDIR)$(prefix)'${PYTHON_INSTALL_LIBDIR} \
-    ./bootstrap.sh \
-        --prefix=/usr \
-        --libdir="/usr/lib/${BOOST_LIB_DIR}" \
-        --enable-python-binding \
-        --disable-static \
-        --with-libiconv \
-        --with-boost-python=$(if [ ${PY_MAJOR_VER} = "2" ]; then echo "boost_python-py27"; else echo "boost_python3-py36"; fi) \
-        --with-boost-libdir="/usr/lib/${BOOST_LIB_DIR}" && \
+    mkdir /tmp/libtorrent/_build -p && \
+    cd /tmp/libtorrent/_build && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="/usr" \
+        -DCMAKE_INSTALL_LIBDIR="lib/${BOOST_LIB_DIR}" \
+        -Dpython-bindings=ON \
+        -Dboost-python-module-name="python${_PY_VER}" \
+        "../" && \
     make VERBOSE=1 -j$(nproc) && \
-    make DESTDIR=/libtorrent-build install
+    echo "**** install libtorrent ****" && \
+    cd /tmp/libtorrent && \
+    make -C "_build" DESTDIR=/libtorrent-build install && \
+    rm -rf /libtorrent-build/usr/lib/cmake
 
 # 
 # TEST
@@ -68,7 +78,6 @@ RUN \
 FROM ubuntu AS test
 
 ARG LIBTORRENT_VER
-ARG PY_MAJOR_VER
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
 
@@ -83,10 +92,10 @@ RUN \
         libboost-random-dev \
         libboost-system-dev \
         libboost-tools-dev \
-        python$(if [ ${PY_MAJOR_VER} = "3" ]; then echo 3; fi)-minimal
+        python3-minimal
 
 RUN \
-    BUILD_VER=$(python${PY_MAJOR_VER} -c 'import libtorrent as lt; print(lt.version)') && \
+    BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
     if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
         echo "Successfully built with version: ${BUILD_VER}"; \
     else \

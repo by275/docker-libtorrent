@@ -29,7 +29,7 @@ jobs:
         uses: ilteoood/docker_buildx@1.1.0
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py2,${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py2
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py2
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=2
           publish: true
@@ -40,7 +40,6 @@ jobs:
         name: Run Buildx Python3
         run : |
           docker buildx build \
-            -t ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:latest-${{ steps.vars.outputs.distro }}-py3 \
             -t ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3 \
             --build-arg LIBTORRENT_VER=${{ env.LIBTORRENT_VER }} \
             --build-arg PY_MAJOR_VER=3 \
@@ -58,9 +57,7 @@ jobs:
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
             Tags:
-              - latest-${{ steps.vars.outputs.distro }}-py2
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py2
-              - latest-${{ steps.vars.outputs.distro }}-py3
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   alpine311:
@@ -80,7 +77,7 @@ jobs:
         uses: ilteoood/docker_buildx@1.1.0
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: latest-${{ steps.vars.outputs.distro }}-py2,${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py2
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py2
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }},PY_MAJOR_VER=2
           publish: true
@@ -91,7 +88,6 @@ jobs:
         name: Run Buildx Python3
         run : |
           docker buildx build \
-            -t ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:latest-${{ steps.vars.outputs.distro }}-py3 \
             -t ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3 \
             --build-arg LIBTORRENT_VER=${{ env.LIBTORRENT_VER }} \
             --build-arg PY_MAJOR_VER=3 \
@@ -109,9 +105,7 @@ jobs:
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
             Tags:
-              - latest-${{ steps.vars.outputs.distro }}-py2
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py2
-              - latest-${{ steps.vars.outputs.distro }}-py3
               - ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   alpine312:
