@@ -10,7 +10,6 @@ RUN \
     apt-get update && \
     apt-get install -yq \
         build-essential \
-        cmake \
         git \
         libboost-chrono-dev \
         libboost-python-dev \
@@ -19,6 +18,29 @@ RUN \
         libssl-dev \
         `# python-deps` \
         python3-setuptools python3-all-dev
+
+ENV CMAKE_VER="3.19.2"
+RUN \
+    echo "**** install cmake v${CMAKE_VER} ****" && \
+    apt-get update && \
+    apt-get install -yq \
+        build-essential \
+        libssl-dev \
+        wget && \
+    if [ $TARGETARCH = "arm" ]; then \
+        export CFLAGS="-D_FILE_OFFSET_BITS=64" && \
+        export CXXFLAGS="-D_FILE_OFFSET_BITS=64"; \
+    fi && \
+    cd $(mktemp -d) && \
+    wget https://cmake.org/files/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz --no-check-certificate && \
+    tar -xzf cmake-${CMAKE_VER}.tar.gz --strip-components=1 && \
+    ./bootstrap \
+        --prefix=/usr \
+        --parallel=$(nproc) \
+        -- \
+        -DCMAKE_BUILD_TYPE:STRING=Release && \
+    make -j$(nproc) && \
+    make install
 
 RUN \
     echo "**** clone source ****" && \
