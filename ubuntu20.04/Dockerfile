@@ -18,6 +18,7 @@ RUN \
         libboost-python-dev \
         libboost-random-dev \
         libboost-system-dev \
+        libboost-tools-dev \
         libssl-dev \
         libtool \
         pkg-config
