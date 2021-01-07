@@ -19,7 +19,7 @@ RUN \
         `# python-deps` \
         python3-setuptools python3-all-dev
 
-ENV CMAKE_VER="3.19.0"
+ENV CMAKE_VER="3.19.2"
 RUN \
     echo "**** install cmake v${CMAKE_VER} ****" && \
     apt-get update && \
@@ -44,7 +44,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
+    GIT_SSL_NO_VERIFY=0 git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
     echo "**** build libtorrent ****" && \

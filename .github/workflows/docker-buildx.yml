@@ -11,7 +11,7 @@ on:
 env:
   DOCKERHUB_USER: wiserain
   DOCKERHUB_REPO: libtorrent
-  LIBTORRENT_VER: "2.0.1"
+  LIBTORRENT_VER: "2.0.2"
 
 jobs:
   alpine310:
