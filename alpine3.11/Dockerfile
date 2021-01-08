@@ -41,7 +41,7 @@ RUN \
         ABIFLAGS=$(python${PY_MAJOR_VER} -c 'import sys; print(sys.abiflags)'); \
         BOOST_PYTHON_NAME="libboost_python38"; \
     else \
-        BOOST_PYTHON_NAME="libboost_python"; \
+        BOOST_PYTHON_NAME="libboost_python-py27"; \
     fi && \
     if [ ! -f "/usr/lib/${BOOST_PYTHON_NAME}.so" ]; then \
         ln -s /usr/lib/libboost_python${PY_VER//./}.so "/usr/lib/${BOOST_PYTHON_NAME}.so"; \
