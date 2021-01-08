@@ -14,7 +14,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
+    GIT_SSL_NO_VERIFY=0 git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
     echo "**** build libtorrent-rasterbar ****" && \
@@ -39,9 +39,9 @@ RUN \
     PY_VER=$(python${PY_MAJOR_VER} -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
     if [ ${PY_MAJOR_VER} = "3" ]; then \
         ABIFLAGS=$(python${PY_MAJOR_VER} -c 'import sys; print(sys.abiflags)'); \
-        BOOST_PYTHON_NAME="libboost_python38"; \
+        BOOST_PYTHON_NAME="libboost_python37"; \
     else \
-        BOOST_PYTHON_NAME="libboost_python"; \
+        BOOST_PYTHON_NAME="libboost_python-py27"; \
     fi && \
     if [ ! -f "/usr/lib/${BOOST_PYTHON_NAME}.so" ]; then \
         ln -s /usr/lib/libboost_python${PY_VER//./}.so "/usr/lib/${BOOST_PYTHON_NAME}.so"; \
