@@ -245,7 +245,7 @@ jobs:
         uses: ilteoood/docker_buildx@1.1.0
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
           publish: true
@@ -261,7 +261,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   ubuntu2004-py3:
     runs-on: ubuntu-20.04
@@ -280,7 +280,7 @@ jobs:
         uses: ilteoood/docker_buildx@1.1.0
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
           publish: true
@@ -296,7 +296,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   ubuntu2010-py3:
     runs-on: ubuntu-20.04
@@ -315,7 +315,7 @@ jobs:
         uses: ilteoood/docker_buildx@1.1.0
         with:
           imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+          tag: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
           dockerFile: ${{ steps.vars.outputs.distro }}/Dockerfile
           buildArg: LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
           publish: true
@@ -331,7 +331,7 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py${{ steps.vars.outputs.pymver }}
+            Tags: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.distro }}-py3
 
   make-release:
     needs:
