@@ -92,5 +92,6 @@ RUN \
 # RELEASE
 # 
 FROM alpine
-LABEL maintainer "wiserain"
+LABEL maintainer="wiserain"
+LABEL org.opencontainers.image.source https://github.com/wiserain/docker-libtorrent
 COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
