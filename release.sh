@@ -5,15 +5,10 @@ TAGS="$2"
 U_ID=$(/usr/bin/id -u)
 G_ID=$(/usr/bin/id -g)
 
-# prepare binfmt and qemu-static
-export DOCKER_CLI_EXPERIMENTAL=enabled
-docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
-docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
 mkdir -p $(pwd)/release
 
 for TAG in $TAGS; do
-    BASE_IMAGE="wiserain/libtorrent:${LIBTORRENT_VER}-${TAG}"
+    BASE_IMAGE="ghcr.io/wiserain/libtorrent:${LIBTORRENT_VER}-${TAG}"
     for manifest in $(docker buildx imagetools inspect --raw ${BASE_IMAGE} | jq -r '.manifests[] | @base64'); do
         arch=$(echo $manifest | base64 --decode | jq -r '.platform.architecture')
         digest=$(echo $manifest | base64 --decode | jq -r '.digest')
