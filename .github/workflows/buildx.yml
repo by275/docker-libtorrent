@@ -89,7 +89,7 @@ jobs:
             LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
             PY_MAJOR_VER=3
       -
-        name: Send Notification
+        name: Send Notification (Py3)
         uses: sarisia/actions-status-discord@v1
         if: failure()
         with:
