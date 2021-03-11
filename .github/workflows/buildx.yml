@@ -1,0 +1,228 @@
+name: buildx
+
+on:
+  watch:
+    types: [started]
+  push:
+    branches:
+      - 'master'
+  pull_request:
+
+env:
+  DOCKERHUB_USER: wiserain
+  IMAGE_NAME: wiserain/libtorrent
+  LIBTORRENT_VER: "2.0.2"
+
+jobs:
+  alpine:
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    strategy:
+      matrix:
+        distro: [alpine3.10, alpine3.11, alpine3.12, alpine3.13]
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to docker.io
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      - 
+        name: Buildx and Push (Py2)
+        if: matrix.distro == 'alpine3.10' || matrix.distro == 'alpine3.11'
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.distro }}/.
+          file: ${{ matrix.distro }}/Dockerfile
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          build-args: |
+            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
+            PY_MAJOR_VER=2
+      -
+        name: Send Notification (Py2)
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
+      - 
+        name: Buildx and Push (Py3)
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.distro }}/.
+          file: ${{ matrix.distro }}/Dockerfile
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          build-args: |
+            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
+            PY_MAJOR_VER=3
+      -
+        name: Send Notification (Py3)
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+
+  ubuntu:
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    strategy:
+      matrix:
+        distro: [ubuntu20.04, ubuntu20.10]
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to docker.io
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      - 
+        name: Buildx and Push
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.distro }}/.
+          file: ${{ matrix.distro }}/Dockerfile
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          build-args: |
+            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+
+  make-release:
+    needs:
+      - alpine
+      - ubuntu
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        run: |
+          echo ::set-output name=date::$(date -u +'%y%m%d')
+          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu20.04-py3 ubuntu20.10-py3"
+          echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/wiserain/docker-libtorrent | jq -r .description)
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      - 
+        name: Generate Release Assets
+        run: |
+          chmod +x ./release.sh
+          ./release.sh ${{ env.LIBTORRENT_VER }} "${{ steps.vars.outputs.tags }}"
+      - 
+        name: Create Release
+        id: create_release
+        if: (github.event_name != 'pull_request')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.date }}
+          release_name: libtorrent-${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.date }}
+          body: Auto-generated release
+          draft: true
+          prerelease: false
+      - 
+        name: Upload Assets to Release with a wildcard
+        if: (github.event_name != 'pull_request')
+        uses: csexton/release-asset-action@v2
+        with:
+          pattern: "release/*.tar.gz"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-url: ${{ steps.create_release.outputs.upload_url }}
+      -
+        name: Update Dockerhub description
+        if: (github.event_name != 'pull_request')
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+          repository: ${{ env.IMAGE_NAME }}
+          short-description: ${{ steps.vars.outputs.github_desc }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            Image: ${{ env.IMAGE_NAME }}
+            Tags: ${{ steps.vars.outputs.tags }}
