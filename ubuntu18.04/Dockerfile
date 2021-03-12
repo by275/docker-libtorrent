@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS ubuntu
+FROM ubuntu:18.04 AS ubuntu
 FROM ubuntu AS builder
 
 ARG TARGETARCH
@@ -32,6 +32,7 @@ RUN \
         --prefix=/usr \
         --parallel=$(nproc) \
         --system-libs \
+        --no-system-libarchive \
         -- \
         -DCMAKE_BUILD_TYPE:STRING=Release && \
     make -j$(nproc) && \
