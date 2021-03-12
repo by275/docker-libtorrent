@@ -1,5 +1,5 @@
 FROM ubuntu:20.10 AS ubuntu
-FROM ubuntu AS build-base
+FROM ghcr.io/wiserain/libtorrent:builder-ubuntu20.10 AS build-base
 
 ARG LIBTORRENT_VER
 ARG TARGETARCH
@@ -17,30 +17,9 @@ RUN \
         libboost-system-dev \
         libssl-dev \
         `# python-deps` \
-        python3-setuptools python3-all-dev
-
-ENV CMAKE_VER="3.19.2"
-RUN \
-    echo "**** install cmake v${CMAKE_VER} ****" && \
-    apt-get update && \
-    apt-get install -yq \
-        build-essential \
-        libssl-dev \
-        wget && \
-    if [ $TARGETARCH = "arm" ]; then \
-        export CFLAGS="-D_FILE_OFFSET_BITS=64" && \
-        export CXXFLAGS="-D_FILE_OFFSET_BITS=64"; \
-    fi && \
-    cd $(mktemp -d) && \
-    wget https://cmake.org/files/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz --no-check-certificate && \
-    tar -xzf cmake-${CMAKE_VER}.tar.gz --strip-components=1 && \
-    ./bootstrap \
-        --prefix=/usr \
-        --parallel=$(nproc) \
-        -- \
-        -DCMAKE_BUILD_TYPE:STRING=Release && \
-    make -j$(nproc) && \
-    make install
+        python3-setuptools python3-all-dev \
+        `# cmake-deps` \
+        libcurl4 libjsoncpp1 libuv1 librhash0 libarchive13
 
 RUN \
     echo "**** clone source ****" && \
