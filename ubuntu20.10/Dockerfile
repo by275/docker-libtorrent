@@ -66,12 +66,8 @@ COPY --from=build-base /libtorrent-build/usr/ /usr/
 RUN \
     echo "**** install runtime packages ****" && \
     apt-get update && \
-    apt-get install -yq \
-        libboost-chrono-dev \
-        libboost-python-dev \
-        libboost-random-dev \
-        libboost-system-dev \
-        libboost-tools-dev \
+    apt-get install -yq --no-install-recommends \
+        'libboost-python[0-9.]+$' \
         python3-minimal
 
 RUN \
