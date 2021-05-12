@@ -49,7 +49,7 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
       - 
         name: Buildx and Push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
@@ -103,7 +103,7 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
       - 
         name: Buildx and Push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
