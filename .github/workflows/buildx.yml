@@ -9,7 +9,7 @@ on:
 env:
   DOCKERHUB_USER: wiserain
   IMAGE_NAME: wiserain/libtorrent
-  LIBTORRENT_VER: "1.2.13"
+  LIBTORRENT_VER: "1.2.14"
 
 jobs:
   alpine:
@@ -17,13 +17,7 @@ jobs:
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     strategy:
       matrix:
-        distro: [alpine3.10, alpine3.11, alpine3.12, alpine3.13]
-        pymver: [2, 3]
-        exclude:
-          - distro: alpine3.12
-            pymver: 2
-          - distro: alpine3.13
-            pymver: 2
+        distro: [alpine3.11, alpine3.12, alpine3.13]
     steps:
       -
         name: Checkout
@@ -54,13 +48,12 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py${{ matrix.pymver }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py${{ matrix.pymver }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           build-args: |
             LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
-            PY_MAJOR_VER=${{ matrix.pymver }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -69,15 +62,15 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py${{ matrix.pymver }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py${{ matrix.pymver }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
 
   ubuntu:
     runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     strategy:
       matrix:
-        distro: [ubuntu18.04, ubuntu20.04, ubuntu20.10]
+        distro: [ubuntu20.04, ubuntu20.10]
     steps:
       -
         name: Checkout
@@ -137,7 +130,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu18.04-py3 ubuntu20.04-py3 ubuntu20.10-py3"
+          echo ::set-output name=tags::"alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu20.04-py3 ubuntu20.10-py3"
       -
         name: Checkout
         uses: actions/checkout@v2
