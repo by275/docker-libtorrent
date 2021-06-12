@@ -1,4 +1,4 @@
-FROM ubuntu:20.10 AS ubuntu
+FROM ubuntu:21.04 AS ubuntu
 # 
 # TEST
 # 

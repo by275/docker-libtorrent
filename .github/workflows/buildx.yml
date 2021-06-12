@@ -11,7 +11,7 @@ on:
 env:
   DOCKERHUB_USER: wiserain
   IMAGE_NAME: wiserain/libtorrent
-  LIBTORRENT_VER: "2.0.3"
+  LIBTORRENT_VER: "2.0.4"
 
 jobs:
   alpine:
@@ -19,94 +19,7 @@ jobs:
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     strategy:
       matrix:
-        distro: [alpine3.10, alpine3.11, alpine3.12, alpine3.13]
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
-      -
-        name: Login to docker.io
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      -
-        name: Login to ghcr.io
-        uses: docker/login-action@v1 
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }}
-      - 
-        name: Buildx and Push (Py2)
-        if: matrix.distro == 'alpine3.10' || matrix.distro == 'alpine3.11'
-        uses: docker/build-push-action@v2
-        with:
-          context: ${{ matrix.distro }}/.
-          file: ${{ matrix.distro }}/Dockerfile
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
-          push: true
-          build-args: |
-            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
-            PY_MAJOR_VER=2
-      -
-        name: Send Notification (Py2)
-        uses: sarisia/actions-status-discord@v1
-        if: failure()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          description: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py2
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py2
-      - 
-        name: Buildx and Push (Py3)
-        uses: docker/build-push-action@v2
-        with:
-          context: ${{ matrix.distro }}/.
-          file: ${{ matrix.distro }}/Dockerfile
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
-          push: true
-          build-args: |
-            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
-            PY_MAJOR_VER=3
-      -
-        name: Send Notification (Py3)
-        uses: sarisia/actions-status-discord@v1
-        if: failure()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          description: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
-
-  ubuntu:
-    runs-on: ubuntu-20.04
-    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
-    strategy:
-      matrix:
-        distro: [ubuntu20.04, ubuntu20.10]
+        distro: [alpine3.11, alpine3.12, alpine3.13]
     steps:
       -
         name: Checkout
@@ -137,9 +50,13 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
@@ -153,9 +70,84 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+
+  ubuntu:
+    runs-on: ubuntu-20.04
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    strategy:
+      matrix:
+        distro: [ubuntu20.04, ubuntu20.10, ubuntu21.04]
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to docker.io
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      - 
+        name: Cross Build and Load Artifacts
+        run: |
+          cd ${{ matrix.distro }}
+          docker build --build-arg LIBTORRENT_VER=${{ env.LIBTORRENT_VER }} -t lt-build:local -f cross-build.dockerfile .
+          docker run --rm -v ${PWD}/build:/build lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
+      - 
+        name: Buildx and Push
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.distro }}/.
+          file: ${{ matrix.distro }}/Dockerfile
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          build-args: |
+            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
 
   make-release:
@@ -170,7 +162,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.10-py2 alpine3.10-py3 alpine3.11-py2 alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu20.04-py3 ubuntu20.10-py3"
+          echo ::set-output name=tags::"alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu20.04-py3 ubuntu20.10-py3 ubuntu21.04-py3"
           echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/wiserain/docker-libtorrent | jq -r .description)
       -
         name: Checkout

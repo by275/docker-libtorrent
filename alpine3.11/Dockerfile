@@ -10,7 +10,9 @@ RUN \
         boost-build \
         openssl-dev \
         boost-dev \
-        git
+        git \
+        `# python-deps` \
+        boost-python3 py3-setuptools python3-dev
 
 RUN \
     echo "**** clone source ****" && \
@@ -23,26 +25,11 @@ RUN \
     BOOST_ROOT="" b2 \
         ${BUILD_CONFIG}
 
-ARG PY_MAJOR_VER
-
-RUN \
-    echo "**** install python-deps ****" && \
-    if [ $PY_MAJOR_VER = "2" ]; then \
-        pydeps="boost-python2 py2-setuptools python2-dev"; \
-    elif [ $PY_MAJOR_VER = "3" ]; then \
-        pydeps="boost-python3 py3-setuptools python3-dev"; \
-    fi && \
-    apk add --no-cache --update ${pydeps}
-
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python${PY_MAJOR_VER} -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
-    if [ ${PY_MAJOR_VER} = "3" ]; then \
-        ABIFLAGS=$(python${PY_MAJOR_VER} -c 'import sys; print(sys.abiflags)'); \
-        BOOST_PYTHON_NAME="libboost_python38"; \
-    else \
-        BOOST_PYTHON_NAME="libboost_python-py27"; \
-    fi && \
+    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
+    BOOST_PYTHON_NAME="libboost_python38" && \
     if [ ! -f "/usr/lib/${BOOST_PYTHON_NAME}.so" ]; then \
         ln -s /usr/lib/libboost_python${PY_VER//./}.so "/usr/lib/${BOOST_PYTHON_NAME}.so"; \
     fi && \
@@ -55,7 +42,7 @@ RUN \
         libtorrent-link=shared boost-link=shared \
         stage_module stage_dependencies && \
     echo "**** collect build artifacts ****" && \
-    PY_PKG_DIR=$(python${PY_MAJOR_VER} -c 'import site; print(site.getsitepackages()[0])') && \
+    PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[0])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
     mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build/usr/lib/
@@ -66,7 +53,6 @@ RUN \
 FROM alpine AS test
 
 ARG LIBTORRENT_VER
-ARG PY_MAJOR_VER
 
 COPY --from=build-base /libtorrent-build/usr/ /usr/
 
@@ -75,11 +61,11 @@ RUN \
     apk add --no-cache \
         libstdc++ \
         boost-system \
-        boost-python${PY_MAJOR_VER} \
-        python${PY_MAJOR_VER}
+        boost-python3 \
+        python3
 
 RUN \
-    BUILD_VER=$(python${PY_MAJOR_VER} -c 'import libtorrent as lt; print(lt.version)') && \
+    BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
     if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
         echo "Successfully built with version: ${BUILD_VER}"; \
     else \
