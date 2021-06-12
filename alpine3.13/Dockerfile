@@ -7,8 +7,8 @@ RUN \
     echo "**** install build-deps ****" && \
     apk add --no-cache --update \
         build-base \
+        boost-build \
         boost-dev \
-        cmake \
         git \
         openssl-dev \
         `# python-deps` \
@@ -19,22 +19,33 @@ RUN \
     GIT_SSL_NO_VERIFY=0 git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
 
 RUN \
-    echo "**** build libtorrent ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
-    mkdir /tmp/libtorrent/_build -p && \
-    cd /tmp/libtorrent/_build && \
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="/usr" \
-        -DCMAKE_INSTALL_LIBDIR="lib" \
-        -Dpython-bindings=ON \
-        -Dboost-python-module-name="python${PY_VER//./}" \
-        "../" && \
-    make VERBOSE=1 -j$(nproc) && \
-    echo "**** install libtorrent ****" && \
+    echo "**** build libtorrent-rasterbar ****" && \
+    BUILD_CONFIG="release cxxstd=14 link=shared crypto=openssl warnings=off address-model=$(getconf LONG_BIT) toolset=gcc -j$(nproc)" && \
     cd /tmp/libtorrent && \
-    make -C "_build" DESTDIR=/libtorrent-build install && \
-    rm -rf /libtorrent-build/usr/lib/cmake
+    BOOST_ROOT="" b2 \
+        ${BUILD_CONFIG}
+
+RUN \
+    echo "**** prepare python envs ****" && \
+    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
+    BOOST_PYTHON_NAME="libboost_python38" && \
+    if [ ! -f "/usr/lib/${BOOST_PYTHON_NAME}.so" ]; then \
+        ln -s /usr/lib/libboost_python${PY_VER//./}.so "/usr/lib/${BOOST_PYTHON_NAME}.so"; \
+    fi && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" > /root/user-config.jam && \
+    echo "**** build python-bindings ****" && \
+    BUILD_CONFIG="release cxxstd=14 link=shared crypto=openssl warnings=off address-model=$(getconf LONG_BIT) toolset=gcc -j$(nproc)" && \
+    cd /tmp/libtorrent/bindings/python && \
+    BOOST_ROOT="" b2 \
+        ${BUILD_CONFIG} \
+        libtorrent-link=shared boost-link=shared \
+        stage_module stage_dependencies && \
+    echo "**** collect build artifacts ****" && \
+    PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[0])') && \
+    mkdir -p /libtorrent-build${PY_PKG_DIR} && \
+    mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
+    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build/usr/lib/
 
 # 
 # TEST
