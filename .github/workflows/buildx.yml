@@ -48,7 +48,9 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
@@ -62,7 +64,9 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
 
   ubuntu:
@@ -70,7 +74,7 @@ jobs:
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu20.10]
+        distro: [ubuntu20.04, ubuntu20.10, ubuntu21.04]
     steps:
       -
         name: Checkout
@@ -95,13 +99,21 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
       - 
+        name: Cross Build and Load Artifacts
+        run: |
+          cd ${{ matrix.distro }}
+          docker build --build-arg LIBTORRENT_VER=${{ env.LIBTORRENT_VER }} -t lt-build:local -f cross-build.dockerfile .
+          docker run --rm -v ${PWD}/build:/build lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
+      - 
         name: Buildx and Push
         uses: docker/build-push-action@v2
         with:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
@@ -115,7 +127,9 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-py3
 
   make-release:
@@ -130,7 +144,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu20.04-py3 ubuntu20.10-py3"
+          echo ::set-output name=tags::"alpine3.11-py3 alpine3.12-py3 alpine3.13-py3 ubuntu20.04-py3 ubuntu20.10-py3 ubuntu21.04-py3"
       -
         name: Checkout
         uses: actions/checkout@v2
