@@ -11,7 +11,7 @@ on:
 env:
   DOCKERHUB_USER: wiserain
   IMAGE_NAME: wiserain/libtorrent
-  LIBTORRENT_VER: "2.0.4"
+  LIBTORRENT_VER: "2.0.5"
 
 jobs:
   alpine:
@@ -19,7 +19,7 @@ jobs:
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     strategy:
       matrix:
-        distro: [alpine3.11, alpine3.12, alpine3.13, alpine3.14]
+        distro: [alpine3.12, alpine3.13, alpine3.14, alpine3.15]
     steps:
       -
         name: Checkout
@@ -76,7 +76,7 @@ jobs:
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu20.10, ubuntu21.04]
+        distro: [ubuntu20.04, ubuntu21.04, ubuntu21.10]
     steps:
       -
         name: Checkout
@@ -146,7 +146,7 @@ jobs:
         id: vars
         run: |
           echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.11 alpine3.12 alpine3.13 alpine3.14 ubuntu20.04 ubuntu20.10 ubuntu21.04"
+          echo ::set-output name=tags::"alpine3.12 alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10"
           echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/wiserain/docker-libtorrent | jq -r .description)
       -
         name: Checkout

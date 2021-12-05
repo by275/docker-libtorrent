@@ -27,7 +27,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     BOOST_PYTHON_NAME="libboost_python38" && \
     if [ ! -f "/usr/lib/${BOOST_PYTHON_NAME}.so" ]; then \

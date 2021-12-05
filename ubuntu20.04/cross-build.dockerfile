@@ -64,7 +64,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
@@ -105,7 +105,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
@@ -146,7 +146,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
