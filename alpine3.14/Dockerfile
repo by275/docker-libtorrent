@@ -21,7 +21,7 @@ RUN \
 
 RUN \
     echo "**** build libtorrent ****" && \
-    PYTHON_VERSION=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     mkdir /tmp/libtorrent/_build -p && \
     cd /tmp/libtorrent/_build && \
     cmake \

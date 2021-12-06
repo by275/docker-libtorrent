@@ -1,4 +1,4 @@
-FROM alpine:3.12 AS alpine
+FROM alpine:3.15 AS alpine
 FROM alpine AS build-base
 
 ARG LIBTORRENT_VER

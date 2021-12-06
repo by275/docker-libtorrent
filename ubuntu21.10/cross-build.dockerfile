@@ -1,10 +1,10 @@
-FROM ubuntu:20.10 AS ubuntu
+FROM ubuntu:21.10 AS ubuntu
 FROM ubuntu AS build-base
 
 ARG LIBTORRENT_VER
 ARG DEBIAN_FRONTEND="noninteractive"
 
-ENV BOOST_VER=1.71.0 \
+ENV BOOST_VER=1.74.0 \
     BOOST_BUILD_PATH=/tmp/boost
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -12,13 +12,13 @@ SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 RUN \
     echo "**** setup cross-compile source ****" && \
     sed -i 's/^deb http/deb [arch=amd64] http/' /etc/apt/sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy-updates main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy-updates universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy-updates multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ groovy-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-updates main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-updates universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-updates multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture arm64 && \
     echo "**** install build-deps ****" && \
@@ -64,7 +64,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
@@ -105,7 +105,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
@@ -146,7 +146,7 @@ RUN \
 
 RUN \
     echo "**** prepare python envs ****" && \
-    PY_VER=$(python3 -c 'import sys; print(".".join([str(x) for x in sys.version_info[:2]]))') && \
+    PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
