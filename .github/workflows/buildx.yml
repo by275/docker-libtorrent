@@ -21,7 +21,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -74,7 +74,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -139,7 +139,7 @@ jobs:
           echo ::set-output name=tags::"alpine3.12 alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10"
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
