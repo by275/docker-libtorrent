@@ -5,14 +5,13 @@ Base image providing pre-built libtorrent with python-bindings
 ## Tags
 
 ```bash
-{libtorrent_ver}-{base_image}-{py_ver}
+{libtorrent_ver}-{base_image}
 ```
 
 | | description |
 |---|---|
-| ```libtorrent_ver```  | release version, i.e. ```1.2.6``` |
-| ```base_image``` | base image with version, i.e. ```alpine3.11``` |
-| ```py_ver``` | python major version, i.e. ```py2``` or ```py3``` |
+| ```libtorrent_ver```  | release version, e.g. ```1.2.15``` |
+| ```base_image``` | base image with version, e.g. ```alpine3.15``` |
 
 ## Usage
 
@@ -21,8 +20,8 @@ Libs are prepared in ```/libtorrent-build/usr/lib/``` so you can copy them to yo
 ### Build
 
 ```Dockerfile
-FROM wiserain/libtorrent:1.2.6-alpine3.11-py3 AS libtorrent
-FROM alpine:3.11
+FROM ghcr.io/by275/libtorrent:1.2.15-alpine3.15 AS libtorrent
+FROM alpine:3.15
 
 # install runtime library
 RUN apk add --no-cache \
@@ -43,5 +42,5 @@ docker build -t libtorrent-test .
 
 ```bash
 >> docker run --rm libtorrent-test python3 -c 'import libtorrent; print(libtorrent.__version__)'
-1.2.6.0
+1.2.15.0
 ```
