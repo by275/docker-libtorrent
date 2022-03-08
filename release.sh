@@ -8,7 +8,7 @@ G_ID=$(/usr/bin/id -g)
 mkdir -p $(pwd)/release
 
 for TAG in $TAGS; do
-    BASE_IMAGE="ghcr.io/wiserain/libtorrent:${LIBTORRENT_VER}-${TAG}"
+    BASE_IMAGE="ghcr.io/by275/libtorrent:${LIBTORRENT_VER}-${TAG}"
     for manifest in $(docker buildx imagetools inspect --raw ${BASE_IMAGE} | jq -r '.manifests[] | @base64'); do
         arch=$(echo $manifest | base64 --decode | jq -r '.platform.architecture')
         digest=$(echo $manifest | base64 --decode | jq -r '.digest')

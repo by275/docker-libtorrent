@@ -9,9 +9,10 @@ on:
   pull_request:
 
 env:
-  DOCKERHUB_USER: wiserain
-  IMAGE_NAME: wiserain/libtorrent
+  IMAGE_NAME: ghcr.io/by275/libtorrent
   LIBTORRENT_VER: "2.0.5"
+  LIBTORRENT_VER_MINOR: "2.0"
+  LIBTORRENT_VER_MAJOR: "2"
 
 jobs:
   alpine:
@@ -31,12 +32,6 @@ jobs:
         name: Set up Buildx
         uses: docker/setup-buildx-action@v1
       -
-        name: Login to docker.io
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      -
         name: Login to ghcr.io
         uses: docker/login-action@v1 
         with:
@@ -52,8 +47,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           build-args: |
@@ -68,8 +63,8 @@ jobs:
           description: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
 
   ubuntu:
     runs-on: ubuntu-20.04
@@ -87,12 +82,6 @@ jobs:
       -
         name: Set up Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Login to docker.io
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Login to ghcr.io
         uses: docker/login-action@v1 
@@ -115,8 +104,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           build-args: |
@@ -131,8 +120,8 @@ jobs:
           description: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
 
   make-release:
     needs:
@@ -143,11 +132,9 @@ jobs:
     steps:
       - 
         name: Load Variables
-        id: vars
         run: |
-          echo ::set-output name=date::$(date -u +'%y%m%d')
-          echo ::set-output name=tags::"alpine3.12 alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10"
-          echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/wiserain/docker-libtorrent | jq -r .description)
+          echo "DATE=$(date -u +'%y%m%d')" >> $GITHUB_ENV
+          echo "TAGS=alpine3.12 alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10" >> $GITHUB_ENV
       -
         name: Checkout
         uses: actions/checkout@v3
@@ -161,7 +148,7 @@ jobs:
         name: Generate Release Assets
         run: |
           chmod +x ./release.sh
-          ./release.sh ${{ env.LIBTORRENT_VER }} "${{ steps.vars.outputs.tags }}"
+          ./release.sh ${{ env.LIBTORRENT_VER }} "${{ env.TAGS }}"
       - 
         name: Create Release
         id: create_release
@@ -170,8 +157,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.date }}
-          release_name: libtorrent-${{ env.LIBTORRENT_VER }}-${{ steps.vars.outputs.date }}
+          tag_name: ${{ env.LIBTORRENT_VER }}-${{ env.DATE }}
+          release_name: libtorrent-${{ env.LIBTORRENT_VER }}-${{ env.DATE }}
           body: Auto-generated release
           draft: true
           prerelease: false
@@ -184,15 +171,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-url: ${{ steps.create_release.outputs.upload_url }}
       -
-        name: Update Dockerhub description
-        if: (github.event_name != 'pull_request')
-        uses: peter-evans/dockerhub-description@v2
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-          repository: ${{ env.IMAGE_NAME }}
-          short-description: ${{ steps.vars.outputs.github_desc }}
-      -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
         if: always()
@@ -201,4 +179,4 @@ jobs:
           status: ${{ job.status }}
           description: |
             Image: ${{ env.IMAGE_NAME }}
-            Tags: ${{ steps.vars.outputs.tags }}
+            Tags: ${{ env.TAGS }}

@@ -29,7 +29,7 @@ RUN \
 # RELEASE
 # 
 FROM ubuntu
-LABEL maintainer="wiserain"
-LABEL org.opencontainers.image.source https://github.com/wiserain/docker-libtorrent
+LABEL maintainer="by275"
+LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
 ARG TARGETARCH
 COPY build/${TARGETARCH}/usr/ /libtorrent-build/usr/
