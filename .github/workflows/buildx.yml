@@ -15,7 +15,7 @@ env:
 jobs:
   alpine:
     runs-on: ubuntu-20.04
-    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
         distro: [alpine3.12, alpine3.13, alpine3.14, alpine3.15]
@@ -31,12 +31,12 @@ jobs:
         uses: docker/setup-buildx-action@v1
       -
         name: Login to ghcr.io
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
-      - 
+      -
         name: Buildx and Push
         uses: docker/build-push-action@v2
         with:
@@ -64,7 +64,7 @@ jobs:
 
   ubuntu:
     runs-on: ubuntu-20.04
-    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
         distro: [ubuntu20.04, ubuntu21.04, ubuntu21.10]
@@ -80,18 +80,18 @@ jobs:
         uses: docker/setup-buildx-action@v1
       -
         name: Login to ghcr.io
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
-      - 
+      -
         name: Cross Build and Load Artifacts
         run: |
           cd ${{ matrix.distro }}
           docker build --build-arg LIBTORRENT_VER=${{ env.LIBTORRENT_VER }} -t lt-build:local -f cross-build.dockerfile .
           docker run --rm -v ${PWD}/build:/build lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
-      - 
+      -
         name: Buildx and Push
         uses: docker/build-push-action@v2
         with:
@@ -122,9 +122,9 @@ jobs:
       - alpine
       - ubuntu
     runs-on: ubuntu-20.04
-    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     steps:
-      - 
+      -
         name: Load Variables
         run: |
           echo "DATE=$(date -u +'%y%m%d')" >> $GITHUB_ENV
@@ -138,15 +138,15 @@ jobs:
       -
         name: Set up Buildx
         uses: docker/setup-buildx-action@v1
-      - 
+      -
         name: Generate Release Assets
         run: |
           chmod +x ./release.sh
           ./release.sh ${{ env.LIBTORRENT_VER }} "${{ env.TAGS }}"
-      - 
+      -
         name: Create Release
         id: create_release
-        if: (github.event_name != 'pull_request')
+        if: github.event_name != 'pull_request'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
@@ -156,9 +156,9 @@ jobs:
           body: Auto-generated release
           draft: true
           prerelease: false
-      - 
+      -
         name: Upload Assets to Release with a wildcard
-        if: (github.event_name != 'pull_request')
+        if: github.event_name != 'pull_request'
         uses: csexton/release-asset-action@v2
         with:
           pattern: "release/*.tar.gz"
