@@ -10,7 +10,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LIBTORRENT_VER: "2.0.5"
+  LIBTORRENT_VER: "2.0.6"
   LIBTORRENT_VER_MINOR: "2.0"
   LIBTORRENT_VER_MAJOR: "2"
 
