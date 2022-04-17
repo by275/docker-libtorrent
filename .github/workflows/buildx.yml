@@ -8,7 +8,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LIBTORRENT_VER: "1.2.15"
+  LIBTORRENT_VER: "1.2.16"
   LIBTORRENT_VER_MINOR: "1.2"
   LIBTORRENT_VER_MAJOR: "1"
 
@@ -18,7 +18,7 @@ jobs:
     if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
-        distro: [alpine3.12, alpine3.13, alpine3.14, alpine3.15]
+        distro: [alpine3.13, alpine3.14, alpine3.15]
     steps:
       -
         name: Checkout
@@ -128,7 +128,7 @@ jobs:
         name: Load Variables
         run: |
           echo "DATE=$(date -u +'%y%m%d')" >> $GITHUB_ENV
-          echo "TAGS=alpine3.12 alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10" >> $GITHUB_ENV
+          echo "TAGS=alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10" >> $GITHUB_ENV
       -
         name: Checkout
         uses: actions/checkout@v3
