@@ -10,9 +10,9 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LIBTORRENT_VER: "2.0.6"
-  LIBTORRENT_VER_MINOR: "2.0"
-  LIBTORRENT_VER_MAJOR: "2"
+  LT_VER: "2.0.6"
+  LT_VER_MINOR: "2.0"
+  LT_VER_MAJOR: "2"
 
 jobs:
   alpine:
@@ -47,13 +47,13 @@ jobs:
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
           platforms: linux/${{ matrix.arch }}
           push: true
           build-args: |
-            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
+            LT_VER=${{ env.LT_VER }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -63,9 +63,9 @@ jobs:
           status: ${{ job.status }}
           description: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
 
   alpine-release:
     needs:
@@ -101,29 +101,29 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm
           docker manifest push ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
       - 
-        name: Create manifest and push for ${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+        name: Create manifest and push for ${{ env.LT_VER }}-${{ matrix.distro }}
         run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-arm
-          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
       - 
-        name: Create manifest and push for ${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+        name: Create manifest and push for ${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
         run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-arm
-          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
       - 
-        name: Create manifest and push for ${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
+        name: Create manifest and push for ${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
         run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-arm
-          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
 
   ubuntu:
     runs-on: ubuntu-20.04
@@ -152,7 +152,7 @@ jobs:
         name: Cross Build and Load Artifacts
         run: |
           cd ${{ matrix.distro }}
-          docker build --build-arg LIBTORRENT_VER=${{ env.LIBTORRENT_VER }} -t lt-build:local -f cross-build.dockerfile .
+          docker build --build-arg LT_VER=${{ env.LT_VER }} -t lt-build:local -f cross-build.dockerfile .
           docker run --rm -v ${PWD}/build:/build lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
       -
         name: Buildx and Push
@@ -162,13 +162,13 @@ jobs:
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           build-args: |
-            LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
+            LT_VER=${{ env.LT_VER }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -178,9 +178,9 @@ jobs:
           status: ${{ job.status }}
           description: |
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
 
   make-release:
     needs:
@@ -207,7 +207,7 @@ jobs:
         name: Generate Release Assets
         run: |
           chmod +x ./release.sh
-          ./release.sh ${{ env.LIBTORRENT_VER }} "${{ env.TAGS }}"
+          ./release.sh ${{ env.LT_VER }} "${{ env.TAGS }}"
       -
         name: Create Release
         id: create_release
@@ -216,8 +216,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ env.LIBTORRENT_VER }}-${{ env.DATE }}
-          release_name: libtorrent-${{ env.LIBTORRENT_VER }}-${{ env.DATE }}
+          tag_name: ${{ env.LT_VER }}-${{ env.DATE }}
+          release_name: libtorrent-${{ env.LT_VER }}-${{ env.DATE }}
           body: Auto-generated release
           draft: true
           prerelease: false
