@@ -1,7 +1,11 @@
 FROM alpine:3.14 AS alpine
+
+# 
+# BUILD
+# 
 FROM alpine AS build-base
 
-ARG LIBTORRENT_VER
+ARG LT_VER
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -16,7 +20,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    GIT_SSL_NO_VERIFY=0 git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LIBTORRENT_VER}" --depth 1
+    GIT_SSL_NO_VERIFY=0 git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LT_VER}" --depth 1
 
 RUN \
     echo "**** build libtorrent-rasterbar ****" && \
@@ -52,21 +56,21 @@ RUN \
 # 
 FROM alpine AS test
 
-ARG LIBTORRENT_VER
+ARG LT_VER
 
 COPY --from=build-base /libtorrent-build/usr/ /usr/
+COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
 
 RUN \
     echo "**** install runtime packages ****" && \
     apk add --no-cache \
         libstdc++ \
-        boost-system \
         boost-python3 \
         python3
 
 RUN \
     BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
-    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+    if [ $LT_VER = ${BUILD_VER%.*} ]; then \
         echo "Successfully built with version: ${BUILD_VER}"; \
     else \
         echo "Something went wrong: ${BUILD_VER}"; \
@@ -79,4 +83,4 @@ RUN \
 FROM alpine
 LABEL maintainer="by275"
 LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
-COPY --from=build-base /libtorrent-build/usr/ /libtorrent-build/usr/
+COPY --from=test /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
