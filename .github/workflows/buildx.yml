@@ -118,7 +118,7 @@ jobs:
     if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu21.04, ubuntu21.10]
+        distro: [ubuntu20.04, ubuntu21.10, ubuntu22.04]
     steps:
       -
         name: Checkout
@@ -179,7 +179,7 @@ jobs:
         name: Load Variables
         run: |
           echo "DATE=$(date -u +'%y%m%d')" >> $GITHUB_ENV
-          echo "TAGS=alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10" >> $GITHUB_ENV
+          echo "TAGS=alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.10 ubuntu22.04" >> $GITHUB_ENV
       -
         name: Checkout
         uses: actions/checkout@v3
