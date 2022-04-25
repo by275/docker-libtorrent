@@ -1,14 +1,16 @@
 FROM ubuntu:21.04 AS ubuntu
+
 # 
 # TEST
 # 
 FROM ubuntu AS test
 
-ARG LIBTORRENT_VER
+ARG LT_VER
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
 
 COPY build/${TARGETARCH}/usr/ /usr/
+COPY build/${TARGETARCH}/usr/ /libtorrent-build/usr/
 
 RUN \
     echo "**** install runtime packages ****" && \
@@ -18,7 +20,7 @@ RUN \
 
 RUN \
     BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
-    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+    if [ $LT_VER = ${BUILD_VER%.*} ]; then \
         echo "Successfully built with version: ${BUILD_VER}"; \
     else \
         echo "Something went wrong: ${BUILD_VER}"; \
@@ -31,5 +33,4 @@ RUN \
 FROM ubuntu
 LABEL maintainer="by275"
 LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
-ARG TARGETARCH
-COPY build/${TARGETARCH}/usr/ /libtorrent-build/usr/
+COPY --from=test /libtorrent-build/usr/ /libtorrent-build/usr/
