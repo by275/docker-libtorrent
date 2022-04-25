@@ -5,7 +5,7 @@ FROM ubuntu:21.04 AS ubuntu
 # 
 FROM ubuntu AS test
 
-ARG LIBTORRENT_VER
+ARG LT_VER
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
 
@@ -20,7 +20,7 @@ RUN \
 
 RUN \
     BUILD_VER=$(python3 -c 'import libtorrent as lt; print(lt.version)') && \
-    if [ $LIBTORRENT_VER = ${BUILD_VER%.*} ]; then \
+    if [ $LT_VER = ${BUILD_VER%.*} ]; then \
         echo "Successfully built with version: ${BUILD_VER}"; \
     else \
         echo "Something went wrong: ${BUILD_VER}"; \
