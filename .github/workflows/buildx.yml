@@ -21,6 +21,7 @@ jobs:
     strategy:
       matrix:
         distro: [alpine3.13, alpine3.14, alpine3.15]
+        arch: [amd64, arm64, arm]
     steps:
       -
         name: Checkout
@@ -45,11 +46,11 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           push: true
           build-args: |
             LIBTORRENT_VER=${{ env.LIBTORRENT_VER }}
@@ -61,10 +62,68 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
-            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
+
+  alpine-release:
+    needs:
+      - alpine
+    runs-on: ubuntu-20.04
+    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
+    strategy:
+      matrix:
+        distro: [alpine3.13, alpine3.14, alpine3.15]
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      - 
+        name: Create manifest and push for latest-${{ matrix.distro }}
+        run: |
+          docker manifest create ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
+      - 
+        name: Create manifest and push for ${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+        run: |
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER }}-${{ matrix.distro }}
+      - 
+        name: Create manifest and push for ${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+        run: |
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MINOR }}-${{ matrix.distro }}
+      - 
+        name: Create manifest and push for ${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
+        run: |
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LIBTORRENT_VER_MAJOR }}-${{ matrix.distro }}
 
   ubuntu:
     runs-on: ubuntu-20.04
@@ -125,7 +184,7 @@ jobs:
 
   make-release:
     needs:
-      - alpine
+      - alpine-release
       - ubuntu
     runs-on: ubuntu-20.04
     if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
