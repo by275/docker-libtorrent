@@ -1,41 +1,34 @@
 FROM ubuntu:21.10 AS ubuntu
+
+# 
+# BUILD
+# 
 FROM ubuntu AS build-base
 
 ARG LT_VER
+ARG CODENAME=impish
 ARG DEBIAN_FRONTEND="noninteractive"
-
-ENV BOOST_VER=1.74.0 \
-    BOOST_BUILD_PATH=/tmp/boost
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 RUN \
     echo "**** setup cross-compile source ****" && \
     sed -i 's/^deb http/deb [arch=amd64] http/' /etc/apt/sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-updates main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-updates universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-updates multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ impish-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture arm64 && \
     echo "**** install build-deps ****" && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        build-essential \
         curl \
-        git
-
-RUN \
-    echo "**** install boost ****" && \
-    mkdir -p "${BOOST_BUILD_PATH}" && \
-    cd "${BOOST_BUILD_PATH}" && \
-    curl -sNLOk https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VER}/source/boost_${BOOST_VER//./_}.tar.gz && \
-    tar xf "boost_${BOOST_VER//./_}.tar.gz" --strip-components=1 && \
-    ./bootstrap.sh && \
-    ./b2 headers
+        git \
+        libboost-tools-dev
 
 RUN \
     echo "**** clone source ****" && \
@@ -47,20 +40,26 @@ RUN \
 FROM build-base AS build-amd64
 
 ARG DEBIAN_FRONTEND="noninteractive"
-ENV TOOLCHAIN="x86_64-linux-gnu"
+ENV TOOLCHAIN=x86_64-linux-gnu \
+    ARCH=amd64 \
+    BUILD_CONFIG="address-model=64 toolset=gcc-amd64"
 
 RUN \
     echo "**** install build-deps ****" && \
     apt-get install -y --no-install-recommends \
-        python3-all-dev \
-        libssl-dev
+        crossbuild-essential-${ARCH} \
+        python3-all-dev:${ARCH} \
+        libboost-dev:${ARCH} \
+        libboost-python-dev:${ARCH} \
+        libboost-system-dev:${ARCH} \
+        libssl-dev:${ARCH}
 
 RUN \
     echo "**** build libtorrent-rasterbar ****" && \
-    BUILD_CONFIG="release cxxstd=14 link=static crypto=openssl warnings=off address-model=64 toolset=gcc target-os=linux -j$(nproc)" && \
+    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam && \
     cd /tmp/libtorrent && \
-    BOOST_ROOT="" ${BOOST_BUILD_PATH}/b2 \
-        ${BUILD_CONFIG}
+    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
+        ${BUILD_CONFIG} link=shared
 
 RUN \
     echo "**** prepare python envs ****" && \
@@ -68,11 +67,9 @@ RUN \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
-    BUILD_CONFIG="release cxxstd=14 link=shared crypto=openssl warnings=off address-model=64 toolset=gcc target-os=linux -j$(nproc)" && \
     cd /tmp/libtorrent/bindings/python && \
-    BOOST_ROOT="" ${BOOST_BUILD_PATH}/b2 \
-        ${BUILD_CONFIG} \
-        libtorrent-link=shared boost-link=shared \
+    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
+        ${BUILD_CONFIG} link=shared libtorrent-link=shared boost-link=shared \
         stage_module stage_dependencies && \
     echo "**** collect build artifacts ****" && \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
@@ -86,22 +83,26 @@ RUN \
 FROM build-base AS build-arm64
 
 ARG DEBIAN_FRONTEND="noninteractive"
-ENV TOOLCHAIN="aarch64-linux-gnu"
+ENV TOOLCHAIN=aarch64-linux-gnu \
+    ARCH=arm64 \
+    BUILD_CONFIG="address-model=64 toolset=gcc-arm64"
 
 RUN \
     echo "**** install build-deps ****" && \
     apt-get install -y --no-install-recommends \
-        crossbuild-essential-arm64 \
-        python3-all-dev:arm64 \
-        libssl-dev:arm64
+        crossbuild-essential-${ARCH} \
+        python3-all-dev:${ARCH} \
+        libboost-dev:${ARCH} \
+        libboost-python-dev:${ARCH} \
+        libboost-system-dev:${ARCH} \
+        libssl-dev:${ARCH}
 
 RUN \
     echo "**** build libtorrent-rasterbar ****" && \
-    BUILD_CONFIG="release cxxstd=14 link=static crypto=openssl warnings=off address-model=64 toolset=gcc-arm target-os=linux -j$(nproc)" && \
-    echo "using gcc : arm : ${TOOLCHAIN}-g++ ;" > ~/user-config.jam && \
+    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam && \
     cd /tmp/libtorrent && \
-    BOOST_ROOT="" ${BOOST_BUILD_PATH}/b2 \
-        ${BUILD_CONFIG}
+    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
+        ${BUILD_CONFIG} link=shared
 
 RUN \
     echo "**** prepare python envs ****" && \
@@ -109,11 +110,9 @@ RUN \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
-    BUILD_CONFIG="release cxxstd=14 link=shared crypto=openssl warnings=off address-model=64 toolset=gcc-arm target-os=linux -j$(nproc)" && \
     cd /tmp/libtorrent/bindings/python && \
-    BOOST_ROOT="" ${BOOST_BUILD_PATH}/b2 \
-        ${BUILD_CONFIG} \
-        libtorrent-link=shared boost-link=shared \
+    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
+        ${BUILD_CONFIG} link=shared libtorrent-link=shared boost-link=shared \
         stage_module stage_dependencies && \
     echo "**** collect build artifacts ****" && \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
@@ -124,25 +123,29 @@ RUN \
     mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIB_DIR}
 
 
-FROM build-base AS build-arm
+FROM build-base AS build-armhf
 
 ARG DEBIAN_FRONTEND="noninteractive"
-ENV TOOLCHAIN="arm-linux-gnueabihf"
+ENV TOOLCHAIN=arm-linux-gnueabihf \
+    ARCH=armhf \
+    BUILD_CONFIG="address-model=32 toolset=gcc-armhf"
 
 RUN \
     echo "**** install build-deps ****" && \
     apt-get install -y --no-install-recommends \
-        crossbuild-essential-armhf \
-        python3-all-dev:armhf \
-        libssl-dev:armhf
+        crossbuild-essential-${ARCH} \
+        python3-all-dev:${ARCH} \
+        libboost-dev:${ARCH} \
+        libboost-python-dev:${ARCH} \
+        libboost-system-dev:${ARCH} \
+        libssl-dev:${ARCH}
 
 RUN \
     echo "**** build libtorrent-rasterbar ****" && \
-    BUILD_CONFIG="release cxxstd=14 link=static crypto=openssl warnings=off address-model=32 toolset=gcc-arm target-os=linux -j$(nproc)" && \
-    echo "using gcc : arm : ${TOOLCHAIN}-g++ ;" > ~/user-config.jam && \
+    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam && \
     cd /tmp/libtorrent && \
-    BOOST_ROOT="" ${BOOST_BUILD_PATH}/b2 \
-        ${BUILD_CONFIG}
+    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
+        ${BUILD_CONFIG} link=shared
 
 RUN \
     echo "**** prepare python envs ****" && \
@@ -150,11 +153,9 @@ RUN \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
     echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
-    BUILD_CONFIG="release cxxstd=14 link=shared crypto=openssl warnings=off address-model=32 toolset=gcc-arm target-os=linux -j$(nproc)" && \
     cd /tmp/libtorrent/bindings/python && \
-    BOOST_ROOT="" ${BOOST_BUILD_PATH}/b2 \
-        ${BUILD_CONFIG} \
-        libtorrent-link=shared boost-link=shared \
+    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
+        ${BUILD_CONFIG} link=shared libtorrent-link=shared boost-link=shared \
         stage_module stage_dependencies && \
     echo "**** collect build artifacts ****" && \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
@@ -170,4 +171,4 @@ RUN \
 FROM ubuntu
 COPY --from=build-amd64 /libtorrent-build/ /lt-build/amd64/
 COPY --from=build-arm64 /libtorrent-build/ /lt-build/arm64/
-COPY --from=build-arm /libtorrent-build/ /lt-build/arm/
+COPY --from=build-armhf /libtorrent-build/ /lt-build/arm/
