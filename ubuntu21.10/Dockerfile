@@ -1,4 +1,5 @@
 FROM ubuntu:21.10 AS ubuntu
+
 # 
 # TEST
 # 
@@ -9,6 +10,7 @@ ARG TARGETARCH
 ARG DEBIAN_FRONTEND="noninteractive"
 
 COPY build/${TARGETARCH}/usr/ /usr/
+COPY build/${TARGETARCH}/usr/ /libtorrent-build/usr/
 
 RUN \
     echo "**** install runtime packages ****" && \
@@ -31,5 +33,4 @@ RUN \
 FROM ubuntu
 LABEL maintainer="by275"
 LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
-ARG TARGETARCH
-COPY build/${TARGETARCH}/usr/ /libtorrent-build/usr/
+COPY --from=test /libtorrent-build/usr/ /libtorrent-build/usr/

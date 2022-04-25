@@ -1,4 +1,8 @@
 FROM alpine:3.13 AS alpine
+
+# 
+# BUILD
+# 
 FROM alpine AS build-base
 
 ARG LIBTORRENT_VER
@@ -55,12 +59,12 @@ FROM alpine AS test
 ARG LIBTORRENT_VER
 
 COPY --from=build-base /libtorrent-build/usr/ /usr/
+COPY --from=build-base /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
 
 RUN \
     echo "**** install runtime packages ****" && \
     apk add --no-cache \
         libstdc++ \
-        boost-system \
         boost-python3 \
         python3
 
@@ -79,4 +83,4 @@ RUN \
 FROM alpine
 LABEL maintainer="by275"
 LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
-COPY --from=build-base /libtorrent-build/usr/ /libtorrent-build/usr/
+COPY --from=test /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/
