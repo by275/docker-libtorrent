@@ -47,7 +47,7 @@ ENV TOOLCHAIN=x86_64-linux-gnu \
 RUN \
     echo "**** install build-deps ****" && \
     apt-get install -y --no-install-recommends \
-        crossbuild-essential-${ARCH} \
+        build-essential \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
