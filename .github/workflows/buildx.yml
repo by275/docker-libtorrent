@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - 'v1.2'
-  pull_request:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
   LT_VER: "1.2.16"
   LT_VER_MINOR: "1.2"
   LT_VER_MAJOR: "1"
+  TAGS: "alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.10 ubuntu22.04"
 
 jobs:
   alpine:
@@ -73,12 +73,6 @@ jobs:
         distro: [alpine3.13, alpine3.14, alpine3.15]
     steps:
       -
-        name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      -
         name: Set up Buildx
         uses: docker/setup-buildx-action@v1
       -
@@ -118,7 +112,7 @@ jobs:
     if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu21.04, ubuntu21.10]
+        distro: [ubuntu20.04, ubuntu21.10, ubuntu22.04]
     steps:
       -
         name: Checkout
@@ -179,7 +173,6 @@ jobs:
         name: Load Variables
         run: |
           echo "DATE=$(date -u +'%y%m%d')" >> $GITHUB_ENV
-          echo "TAGS=alpine3.13 alpine3.14 alpine3.15 ubuntu20.04 ubuntu21.04 ubuntu21.10" >> $GITHUB_ENV
       -
         name: Checkout
         uses: actions/checkout@v3
@@ -197,7 +190,6 @@ jobs:
       -
         name: Create Release
         id: create_release
-        if: github.event_name != 'pull_request'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
@@ -209,7 +201,6 @@ jobs:
           prerelease: false
       -
         name: Upload Assets to Release with a wildcard
-        if: github.event_name != 'pull_request'
         uses: csexton/release-asset-action@v2
         with:
           pattern: "release/*.tar.gz"

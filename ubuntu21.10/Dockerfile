@@ -16,6 +16,7 @@ RUN \
     echo "**** install runtime packages ****" && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
+        'libboost-python[0-9.]+$' \
         python3-minimal
 
 RUN \

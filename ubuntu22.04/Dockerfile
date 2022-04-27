@@ -1,4 +1,4 @@
-FROM ubuntu:21.04 AS ubuntu
+FROM ubuntu:22.04 AS ubuntu
 
 # 
 # TEST
@@ -16,6 +16,7 @@ RUN \
     echo "**** install runtime packages ****" && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
+        'libboost-python[0-9.]+$' \
         python3-minimal
 
 RUN \
