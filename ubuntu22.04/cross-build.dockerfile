@@ -9,6 +9,9 @@ ARG LT_VER
 ARG CODENAME=jammy
 ARG DEBIAN_FRONTEND="noninteractive"
 
+ENV GIT_SSL_NO_VERIFY=0 \
+    BOOST_ROOT=""
+
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 RUN \
@@ -32,7 +35,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    GIT_SSL_NO_VERIFY=0 git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LT_VER}" --depth 1
+    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LT_VER}" --depth 1
 
 # 
 # CROSS COMPILE
@@ -40,9 +43,10 @@ RUN \
 FROM build-base AS build-amd64
 
 ARG DEBIAN_FRONTEND="noninteractive"
+
 ENV TOOLCHAIN=x86_64-linux-gnu \
     ARCH=amd64 \
-    BUILD_CONFIG="address-model=64 toolset=gcc-amd64"
+    BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-amd64 address-model=64"
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -55,22 +59,27 @@ RUN \
         libssl-dev:${ARCH}
 
 RUN \
-    echo "**** build libtorrent-rasterbar ****" && \
-    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam && \
-    cd /tmp/libtorrent && \
-    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
-        ${BUILD_CONFIG} link=shared
+    echo "**** setup b2 user-config.jam ****" && \
+    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam
+
+# RUN \
+#     echo "**** build libtorrent-rasterbar ****" && \
+#     cd /tmp/libtorrent && \
+#     b2 -j$(nproc) ${BUILD_CONFIG} \
+#         link=shared
 
 RUN \
     echo "**** prepare python envs ****" && \
     PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
-    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : .cpython-${PY_VER//./}-${TOOLCHAIN} ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
-    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
-        ${BUILD_CONFIG} link=shared libtorrent-link=shared boost-link=shared \
-        stage_module stage_dependencies && \
+    b2 -j$(nproc) ${BUILD_CONFIG} \
+        libtorrent-link=shared \
+        boost-link=shared \
+        stage_module \
+        stage_dependencies && \
     echo "**** collect build artifacts ****" && \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
@@ -83,9 +92,10 @@ RUN \
 FROM build-base AS build-arm64
 
 ARG DEBIAN_FRONTEND="noninteractive"
+
 ENV TOOLCHAIN=aarch64-linux-gnu \
     ARCH=arm64 \
-    BUILD_CONFIG="address-model=64 toolset=gcc-arm64"
+    BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-arm64 address-model=64"
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -98,22 +108,27 @@ RUN \
         libssl-dev:${ARCH}
 
 RUN \
-    echo "**** build libtorrent-rasterbar ****" && \
-    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam && \
-    cd /tmp/libtorrent && \
-    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
-        ${BUILD_CONFIG} link=shared
+    echo "**** setup b2 user-config.jam ****" && \
+    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam
+
+# RUN \
+#     echo "**** build libtorrent-rasterbar ****" && \
+#     cd /tmp/libtorrent && \
+#     b2 -j$(nproc) ${BUILD_CONFIG} \
+#         link=shared
 
 RUN \
     echo "**** prepare python envs ****" && \
     PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
-    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : .cpython-${PY_VER//./}-${TOOLCHAIN} ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
-    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
-        ${BUILD_CONFIG} link=shared libtorrent-link=shared boost-link=shared \
-        stage_module stage_dependencies && \
+    b2 -j$(nproc) ${BUILD_CONFIG} \
+        libtorrent-link=shared \
+        boost-link=shared \
+        stage_module \
+        stage_dependencies && \
     echo "**** collect build artifacts ****" && \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
@@ -128,7 +143,7 @@ FROM build-base AS build-armhf
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV TOOLCHAIN=arm-linux-gnueabihf \
     ARCH=armhf \
-    BUILD_CONFIG="address-model=32 toolset=gcc-armhf"
+    BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-armhf address-model=32"
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -141,22 +156,27 @@ RUN \
         libssl-dev:${ARCH}
 
 RUN \
-    echo "**** build libtorrent-rasterbar ****" && \
-    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam && \
-    cd /tmp/libtorrent && \
-    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
-        ${BUILD_CONFIG} link=shared
+    echo "**** setup b2 user-config.jam ****" && \
+    echo "using gcc : ${ARCH} : ${TOOLCHAIN}-g++ ;" >> ~/user-config.jam
+
+# RUN \
+#     echo "**** build libtorrent-rasterbar ****" && \
+#     cd /tmp/libtorrent && \
+#     b2 -j$(nproc) ${BUILD_CONFIG} \
+#         link=shared
 
 RUN \
     echo "**** prepare python envs ****" && \
     PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
-    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ;" >> ~/user-config.jam && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : .cpython-${PY_VER//./}-${TOOLCHAIN} ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
-    BOOST_ROOT="" /usr/bin/b2 -j$(nproc) release cxxstd=14 crypto=openssl warnings=off target-os=linux \
-        ${BUILD_CONFIG} link=shared libtorrent-link=shared boost-link=shared \
-        stage_module stage_dependencies && \
+    b2 -j$(nproc) ${BUILD_CONFIG} \
+        libtorrent-link=shared \
+        boost-link=shared \
+        stage_module \
+        stage_dependencies && \
     echo "**** collect build artifacts ****" && \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
