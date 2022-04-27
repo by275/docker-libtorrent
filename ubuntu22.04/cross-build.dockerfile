@@ -1,4 +1,4 @@
-FROM ubuntu:21.10 AS ubuntu
+FROM ubuntu:22.04 AS ubuntu
 
 # 
 # BUILD
@@ -6,7 +6,7 @@ FROM ubuntu:21.10 AS ubuntu
 FROM ubuntu AS build-base
 
 ARG LT_VER
-ARG CODENAME=impish
+ARG CODENAME=jammy
 ARG DEBIAN_FRONTEND="noninteractive"
 
 ENV GIT_SSL_NO_VERIFY=0 \
