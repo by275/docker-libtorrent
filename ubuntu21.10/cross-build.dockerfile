@@ -72,7 +72,8 @@ RUN \
     echo "**** prepare python envs ****" && \
     PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
-    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : .cpython-${PY_VER//./}-${TOOLCHAIN} ;" >> ~/user-config.jam && \
+    EXT_SUFFIX=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))') && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ${EXT_SUFFIX%%.so} ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
     b2 -j$(nproc) ${BUILD_CONFIG} \
@@ -84,9 +85,9 @@ RUN \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
-    LIB_DIR=/usr/lib/${TOOLCHAIN} && \
-    mkdir -p /libtorrent-build${LIB_DIR} && \
-    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIB_DIR}
+    LIBDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))') && \
+    mkdir -p /libtorrent-build${LIBDIR} && \
+    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIBDIR}
 
 
 FROM build-base AS build-arm64
@@ -121,7 +122,8 @@ RUN \
     echo "**** prepare python envs ****" && \
     PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
-    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : .cpython-${PY_VER//./}-${TOOLCHAIN} ;" >> ~/user-config.jam && \
+    EXT_SUFFIX=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))') && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ${EXT_SUFFIX%%.so} ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
     b2 -j$(nproc) ${BUILD_CONFIG} \
@@ -133,9 +135,9 @@ RUN \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
-    LIB_DIR=/usr/lib/${TOOLCHAIN} && \
-    mkdir -p /libtorrent-build${LIB_DIR} && \
-    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIB_DIR}
+    LIBDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))') && \
+    mkdir -p /libtorrent-build${LIBDIR} && \
+    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIBDIR}
 
 
 FROM build-base AS build-armhf
@@ -169,7 +171,8 @@ RUN \
     echo "**** prepare python envs ****" && \
     PY_VER=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
     ABIFLAGS=$(python3 -c 'import sys; print(sys.abiflags)') && \
-    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : .cpython-${PY_VER//./}-${TOOLCHAIN} ;" >> ~/user-config.jam && \
+    EXT_SUFFIX=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))') && \
+    echo "using python : ${PY_VER} : /usr/bin/python${PY_VER} : /usr/include/python${PY_VER}${ABIFLAGS} : /usr/lib/python${PY_VER} : : ${EXT_SUFFIX%%.so} ;" >> ~/user-config.jam && \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
     b2 -j$(nproc) ${BUILD_CONFIG} \
@@ -181,9 +184,9 @@ RUN \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
-    LIB_DIR=/usr/lib/${TOOLCHAIN} && \
-    mkdir -p /libtorrent-build${LIB_DIR} && \
-    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIB_DIR}
+    LIBDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))') && \
+    mkdir -p /libtorrent-build${LIBDIR} && \
+    mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIBDIR}
 
 # 
 # RELEASE
