@@ -1,0 +1,161 @@
+name: PR
+
+on:
+  pull_request:
+
+env:
+  IMAGE_NAME: ghcr.io/by275/libtorrent
+  LT_VER: "1.2.16"
+
+jobs:
+  changes:
+    runs-on: ubuntu-20.04
+    outputs:
+      alpine: ${{ steps.alpine.outputs.changes }}
+      ubuntu: ${{ steps.ubuntu.outputs.changes }}
+    steps:
+    - uses: dorny/paths-filter@v2
+      id: alpine
+      with:
+        filters: |
+          alpine3.13: alpine3.13/**
+          alpine3.14: alpine3.14/**
+          alpine3.15: alpine3.15/**
+    - uses: dorny/paths-filter@v2
+      id: ubuntu
+      with:
+        filters: |
+          ubuntu20.04: ubuntu20.04/**
+          ubuntu21.10: ubuntu21.10/**
+          ubuntu22.04: ubuntu22.04/**
+
+  alpine:
+    needs:
+      - changes
+    if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
+        arch: [amd64, arm64, arm]
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      -
+        name: Buildx and Push
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.distro }}/.
+          file: ${{ matrix.distro }}/Dockerfile
+          tags: |
+            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          build-args: |
+            LT_VER=${{ env.LT_VER }}
+
+
+  alpine-release:
+    needs:
+      - changes
+      - alpine
+    if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
+    steps:
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      - 
+        name: Create manifest and push for testing
+        run: |
+          docker manifest create ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }} \
+            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-amd64 \
+            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-arm64 \
+            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-arm
+          docker manifest push ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}
+      -
+        name: Generate Release Assets
+        run: |
+          bash release.sh testing "${{ matrix.distro }}"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.distro }}
+          path: "release/*.tar.gz"
+
+  ubuntu:
+    needs:
+      - changes
+    if: ${{ needs.changes.outputs.ubuntu != '[]' && needs.changes.outputs.ubuntu != '' }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        distro: ${{ fromJSON(needs.changes.outputs.ubuntu) }}
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+      -
+        name: Cross Build and Load Artifacts
+        run: |
+          cd ${{ matrix.distro }}
+          docker build --build-arg LT_VER=${{ env.LT_VER }} -t lt-build:local -f cross-build.dockerfile .
+          docker run --rm -v ${PWD}/build:/build lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
+      -
+        name: Buildx and Push
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.distro }}/.
+          file: ${{ matrix.distro }}/Dockerfile
+          tags: |
+            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          build-args: |
+            LT_VER=${{ env.LT_VER }}
+      -
+        name: Generate Release Assets
+        run: |
+          bash release.sh testing "${{ matrix.distro }}"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.distro }}
+          path: "release/*.tar.gz"
