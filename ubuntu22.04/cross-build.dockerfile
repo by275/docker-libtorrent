@@ -27,8 +27,8 @@ RUN \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture arm64 && \
     echo "**** install build-deps ****" && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get update -qq && \
+    apt-get install -yqq --no-install-recommends \
         curl \
         git \
         libboost-tools-dev
@@ -46,12 +46,13 @@ ARG DEBIAN_FRONTEND="noninteractive"
 
 ENV TOOLCHAIN=x86_64-linux-gnu \
     ARCH=amd64 \
+    BUILD_DEPS=build-essential \
     BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-amd64 address-model=64"
 
 RUN \
     echo "**** install build-deps ****" && \
-    apt-get install -y --no-install-recommends \
-        build-essential \
+    apt-get install -yqq --no-install-recommends \
+        ${BUILD_DEPS} \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
@@ -85,7 +86,7 @@ RUN \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
-    LIBDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))') && \
+    LIBDIR=/usr/lib/${TOOLCHAIN} && \
     mkdir -p /libtorrent-build${LIBDIR} && \
     mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIBDIR}
 
@@ -96,12 +97,13 @@ ARG DEBIAN_FRONTEND="noninteractive"
 
 ENV TOOLCHAIN=aarch64-linux-gnu \
     ARCH=arm64 \
+    BUILD_DEPS=crossbuild-essential-arm64 \
     BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-arm64 address-model=64"
 
 RUN \
     echo "**** install build-deps ****" && \
-    apt-get install -y --no-install-recommends \
-        crossbuild-essential-${ARCH} \
+    apt-get install -yqq --no-install-recommends \
+        ${BUILD_DEPS} \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
@@ -135,7 +137,7 @@ RUN \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
-    LIBDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))') && \
+    LIBDIR=/usr/lib/${TOOLCHAIN} && \
     mkdir -p /libtorrent-build${LIBDIR} && \
     mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIBDIR}
 
@@ -143,14 +145,16 @@ RUN \
 FROM build-base AS build-armhf
 
 ARG DEBIAN_FRONTEND="noninteractive"
+
 ENV TOOLCHAIN=arm-linux-gnueabihf \
     ARCH=armhf \
+    BUILD_DEPS=crossbuild-essential-armhf \
     BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-armhf address-model=32"
 
 RUN \
     echo "**** install build-deps ****" && \
-    apt-get install -y --no-install-recommends \
-        crossbuild-essential-${ARCH} \
+    apt-get install -yqq --no-install-recommends \
+        ${BUILD_DEPS} \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
@@ -184,7 +188,7 @@ RUN \
     PY_PKG_DIR=$(python3 -c 'import site; print(site.getsitepackages()[1])') && \
     mkdir -p /libtorrent-build${PY_PKG_DIR} && \
     mv /tmp/libtorrent/bindings/python/*.so /libtorrent-build${PY_PKG_DIR}/ && \
-    LIBDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))') && \
+    LIBDIR=/usr/lib/${TOOLCHAIN} && \
     mkdir -p /libtorrent-build${LIBDIR} && \
     mv /tmp/libtorrent/bindings/python/dependencies/* /libtorrent-build${LIBDIR}
 
