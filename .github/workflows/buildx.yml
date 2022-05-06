@@ -1,8 +1,7 @@
 name: buildx
 
 on:
-  watch:
-    types: [started]
+  workflow_dispatch:
   push:
     branches:
       - 'master'
@@ -17,7 +16,6 @@ env:
 jobs:
   alpine:
     runs-on: ubuntu-20.04
-    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
         distro: [alpine3.13, alpine3.14, alpine3.15]
@@ -71,7 +69,6 @@ jobs:
     needs:
       - alpine
     runs-on: ubuntu-20.04
-    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
         distro: [alpine3.13, alpine3.14, alpine3.15]
@@ -121,7 +118,6 @@ jobs:
 
   ubuntu:
     runs-on: ubuntu-20.04
-    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     strategy:
       matrix:
         distro: [ubuntu20.04, ubuntu21.10, ubuntu22.04]
@@ -181,7 +177,6 @@ jobs:
       - alpine-release
       - ubuntu
     runs-on: ubuntu-20.04
-    if: github.event_name != 'watch' || github.actor == github.event.repository.owner.login
     steps:
       -
         name: Load Variables
