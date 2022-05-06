@@ -31,7 +31,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
       -
         name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       -
         name: Login to ghcr.io
         uses: docker/login-action@v1
@@ -78,7 +78,7 @@ jobs:
     steps:
       -
         name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       -
         name: Login to ghcr.io
         uses: docker/login-action@v1
@@ -134,7 +134,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
       -
         name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       -
         name: Login to ghcr.io
         uses: docker/login-action@v1
@@ -195,7 +195,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
       -
         name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       -
         name: Generate Release Assets
         run: |
