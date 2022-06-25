@@ -20,8 +20,11 @@ Libs are prepared in ```/libtorrent-build/usr/lib/``` so you can copy them to yo
 ### Build
 
 ```Dockerfile
-FROM ghcr.io/by275/libtorrent:2.0.5-alpine3.15 AS libtorrent
-FROM alpine:3.15
+ARG LT_VER=2.0.6
+ARG ALPINE_VER=3.16
+
+FROM ghcr.io/by275/libtorrent:${LT_VER}-alpine${ALPINE_VER} AS libtorrent
+FROM alpine:${ALPINE_VER}
 
 # install runtime library
 RUN apk add --no-cache \
@@ -42,5 +45,5 @@ docker build -t libtorrent-test .
 
 ```bash
 >> docker run --rm libtorrent-test python3 -c 'import libtorrent; print(libtorrent.__version__)'
-2.0.5.0
+2.0.6.0
 ```

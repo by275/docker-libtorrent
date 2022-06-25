@@ -31,7 +31,7 @@ RUN \
 # 
 # RELEASE
 # 
-FROM ubuntu
+FROM scratch
 LABEL maintainer="by275"
 LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
 COPY --from=test /libtorrent-build/usr/ /libtorrent-build/usr/
