@@ -18,17 +18,17 @@ jobs:
       id: alpine
       with:
         filters: |
-          alpine3.13: alpine3.13/**
-          alpine3.14: alpine3.14/**
-          alpine3.15: alpine3.15/**
-          alpine3.16: alpine3.16/**
+          alpine3.13: '{.github,alpine3.13}/**'
+          alpine3.14: '{.github,alpine3.14}/**'
+          alpine3.15: '{.github,alpine3.15}/**'
+          alpine3.16: '{.github,alpine3.16}/**'
     - uses: dorny/paths-filter@v2
       id: ubuntu
       with:
         filters: |
-          ubuntu20.04: ubuntu20.04/**
-          ubuntu21.10: ubuntu21.10/**
-          ubuntu22.04: ubuntu22.04/**
+          ubuntu20.04: '{.github,ubuntu20.04}/**'
+          ubuntu21.10: '{.github,ubuntu21.10}/**'
+          ubuntu22.04: '{.github,ubuntu22.04}/**'
 
   alpine:
     needs:
