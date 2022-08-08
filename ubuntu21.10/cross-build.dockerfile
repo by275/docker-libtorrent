@@ -6,7 +6,6 @@ FROM ubuntu:21.10 AS ubuntu
 FROM ubuntu AS build-base
 
 ARG LT_VER
-ARG CODENAME=impish
 ARG DEBIAN_FRONTEND="noninteractive"
 
 ENV GIT_SSL_NO_VERIFY=0 \
@@ -16,6 +15,7 @@ SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 RUN \
     echo "**** setup cross-compile source ****" && \
+    CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) && \
     sed -i 's/^deb http/deb [arch=amd64] http/' /etc/apt/sources.list && \
     echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
     echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
