@@ -198,23 +198,14 @@ jobs:
           ./release.sh ${{ env.LT_VER }} "${{ env.TAGS }}"
       -
         name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ env.LT_VER }}-${{ env.DATE }}
-          release_name: libtorrent-${{ env.LT_VER }}-${{ env.DATE }}
+          tag: ${{ env.LT_VER }}-${{ env.DATE }}
+          name: libtorrent-${{ env.LT_VER }}-${{ env.DATE }}
+          artifacts: "release/*.tar.gz"
           body: Auto-generated release
           draft: true
           prerelease: false
-      -
-        name: Upload Assets to Release with a wildcard
-        uses: csexton/release-asset-action@v2
-        with:
-          pattern: "release/*.tar.gz"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-url: ${{ steps.create_release.outputs.upload_url }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
