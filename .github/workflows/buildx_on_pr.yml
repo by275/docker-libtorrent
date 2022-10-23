@@ -5,7 +5,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LT_VER: "2.0.7"
+  LT_VER: "2.0.8"
 
 jobs:
   changes:
