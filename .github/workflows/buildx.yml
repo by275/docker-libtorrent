@@ -8,17 +8,17 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LT_VER: "1.2.17"
+  LT_VER: "1.2.18"
   LT_VER_MINOR: "1.2"
   LT_VER_MAJOR: "1"
-  TAGS: "alpine3.13 alpine3.14 alpine3.15 alpine3.16 ubuntu20.04 ubuntu21.10 ubuntu22.04"
+  TAGS: "alpine3.14 alpine3.15 alpine3.16 ubuntu20.04 ubuntu22.10 ubuntu22.04"
 
 jobs:
   alpine:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        distro: [alpine3.13, alpine3.14, alpine3.15, alpine3.16]
+        distro: [alpine3.14, alpine3.15, alpine3.16]
         arch: [amd64, arm64, arm]
     steps:
       -
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        distro: [alpine3.13, alpine3.14, alpine3.15, alpine3.16]
+        distro: [alpine3.14, alpine3.15, alpine3.16]
     steps:
       -
         name: Set up Buildx
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu21.10, ubuntu22.04]
+        distro: [ubuntu20.04, ubuntu22.10, ubuntu22.04]
     steps:
       -
         name: Checkout
@@ -186,23 +186,14 @@ jobs:
           ./release.sh ${{ env.LT_VER }} "${{ env.TAGS }}"
       -
         name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ env.LT_VER }}-${{ env.DATE }}
-          release_name: libtorrent-${{ env.LT_VER }}-${{ env.DATE }}
+          tag: ${{ env.LT_VER }}-${{ env.DATE }}
+          name: libtorrent-${{ env.LT_VER }}-${{ env.DATE }}
+          artifacts: "release/*.tar.gz"
           body: Auto-generated release
           draft: true
           prerelease: false
-      -
-        name: Upload Assets to Release with a wildcard
-        uses: csexton/release-asset-action@v2
-        with:
-          pattern: "release/*.tar.gz"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-url: ${{ steps.create_release.outputs.upload_url }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
