@@ -9,6 +9,7 @@ ARG LT_VER
 
 ENV GIT_SSL_NO_VERIFY=0 \
     BOOST_ROOT="" \
+    BOOST_BUILD_PATH=/usr/share/boost-build/src/kernel \
     BUILD_CONFIG="release cxxstd=14 link=shared crypto=openssl warnings=off toolset=gcc"
 
 RUN \
