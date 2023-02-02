@@ -9,7 +9,7 @@ env:
 
 jobs:
   changes:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       alpine: ${{ steps.alpine.outputs.changes }}
       ubuntu: ${{ steps.ubuntu.outputs.changes }}
@@ -34,7 +34,7 @@ jobs:
     needs:
       - changes
     if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
@@ -68,6 +68,7 @@ jobs:
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
+          provenance: false
 
 
   alpine-release:
@@ -75,7 +76,7 @@ jobs:
       - changes
       - alpine
     if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
@@ -118,7 +119,7 @@ jobs:
     needs:
       - changes
     if: ${{ needs.changes.outputs.ubuntu != '[]' && needs.changes.outputs.ubuntu != '' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.ubuntu) }}
@@ -157,6 +158,7 @@ jobs:
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
+          provenance: false
       -
         name: Generate Release Assets
         run: |
