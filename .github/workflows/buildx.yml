@@ -15,7 +15,7 @@ env:
 
 jobs:
   alpine:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distro: [alpine3.14, alpine3.15, alpine3.16, alpine3.17]
@@ -51,6 +51,7 @@ jobs:
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
+          provenance: false
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -66,7 +67,7 @@ jobs:
   alpine-release:
     needs:
       - alpine
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distro: [alpine3.14, alpine3.15, alpine3.16, alpine3.17]
@@ -107,7 +108,7 @@ jobs:
           docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
 
   ubuntu:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         distro: [ubuntu20.04, ubuntu22.10, ubuntu22.04]
@@ -148,6 +149,7 @@ jobs:
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
+          provenance: false
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -164,7 +166,7 @@ jobs:
     needs:
       - alpine-release
       - ubuntu
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       -
         name: Load Variables
