@@ -8,7 +8,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LT_VER: "1.2.18"
+  LT_VER: "1.2.19"
   LT_VER_MINOR: "1.2"
   LT_VER_MAJOR: "1"
   TAGS: "alpine3.15 alpine3.16 alpine3.17 alpine3.18 ubuntu20.04 ubuntu22.04 ubuntu22.10 ubuntu23.04"
