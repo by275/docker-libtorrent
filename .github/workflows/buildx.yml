@@ -39,7 +39,7 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
       -
         name: Buildx and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
@@ -137,7 +137,7 @@ jobs:
           docker run --rm -v ${PWD}/build:/build lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
       -
         name: Buildx and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
