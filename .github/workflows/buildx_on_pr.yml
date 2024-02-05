@@ -14,7 +14,7 @@ jobs:
       alpine: ${{ steps.alpine.outputs.changes }}
       ubuntu: ${{ steps.ubuntu.outputs.changes }}
     steps:
-    - uses: dorny/paths-filter@v2
+    - uses: dorny/paths-filter@v3
       id: alpine
       with:
         filters: |
@@ -22,7 +22,7 @@ jobs:
           alpine3.17: '{.github,alpine3.17}/**'
           alpine3.18: '{.github,alpine3.18}/**'
           alpine3.19: '{.github,alpine3.19}/**'
-    - uses: dorny/paths-filter@v2
+    - uses: dorny/paths-filter@v3
       id: ubuntu
       with:
         filters: |
