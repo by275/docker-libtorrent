@@ -1,4 +1,4 @@
-FROM ubuntu:23.04 AS ubuntu
+FROM ubuntu:23.10 AS ubuntu
 
 # 
 # BUILD
