@@ -28,7 +28,7 @@ jobs:
         filters: |
           ubuntu20.04: '{.github,ubuntu20.04}/**'
           ubuntu22.04: '{.github,ubuntu22.04}/**'
-          ubuntu23.04: '{.github,ubuntu22.04}/**'
+          ubuntu23.10: '{.github,ubuntu22.04}/**'
 
   alpine:
     needs:
