@@ -11,14 +11,14 @@ env:
   LT_VER: "1.2.19"
   LT_VER_MINOR: "1.2"
   LT_VER_MAJOR: "1"
-  TAGS: "alpine3.17 alpine3.18 alpine3.19 ubuntu20.04 ubuntu22.04 ubuntu23.10 ubuntu24.04"
+  TAGS: "alpine3.17 alpine3.18 alpine3.19 alpine3.20 ubuntu20.04 ubuntu22.04 ubuntu23.10 ubuntu24.04"
 
 jobs:
   alpine:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        distro: [alpine3.17, alpine3.18, alpine3.19]
+        distro: [alpine3.17, alpine3.18, alpine3.19, alpine3.20]
         arch: [amd64, arm64, arm]
     steps:
       -
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        distro: [alpine3.17, alpine3.18, alpine3.19]
+        distro: [alpine3.17, alpine3.18, alpine3.19, alpine3.20]
     steps:
       -
         name: Set up Buildx
