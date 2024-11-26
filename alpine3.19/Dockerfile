@@ -72,5 +72,5 @@ RUN \
 # 
 FROM scratch
 LABEL maintainer="by275"
-LABEL org.opencontainers.image.source https://github.com/by275/docker-libtorrent
+LABEL org.opencontainers.image.source=https://github.com/by275/docker-libtorrent
 COPY --from=test /libtorrent-build/usr/lib/ /libtorrent-build/usr/lib/

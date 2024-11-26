@@ -1,4 +1,4 @@
-FROM ubuntu:23.10 AS ubuntu
+FROM ubuntu:24.10 AS ubuntu
 
 # 
 # BUILD
@@ -16,14 +16,13 @@ SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 RUN \
     echo "**** setup cross-compile source ****" && \
     CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) && \
-    sed -i 's/^deb http/deb [arch=amd64] http/' /etc/apt/sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates main restricted" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates universe" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME} multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-updates multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
-    echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ ${CODENAME}-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/cross-compile-sources.list && \
+    sed -r -i '/^Arch/d;s/^URIs:/Architectures:\x20amd64\n&/g' /etc/apt/sources.list.d/ubuntu.sources && \
+    echo "Types: deb" >> /etc/apt/sources.list.d/cross-compile.sources && \
+    echo "Architectures: arm64 armhf" >> /etc/apt/sources.list.d/cross-compile.sources && \
+    echo "URIs: http://ports.ubuntu.com/" >> /etc/apt/sources.list.d/cross-compile.sources && \
+    echo "Suites: ${CODENAME} ${CODENAME}-updates ${CODENAME}-backports" >> /etc/apt/sources.list.d/cross-compile.sources && \
+    echo "Components: main universe restricted multiverse" >> /etc/apt/sources.list.d/cross-compile.sources && \
+    echo "Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg" >> /etc/apt/sources.list.d/cross-compile.sources && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture arm64 && \
     echo "**** install build-deps ****" && \

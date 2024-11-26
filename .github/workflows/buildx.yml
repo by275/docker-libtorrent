@@ -11,7 +11,7 @@ env:
   LT_VER: "1.2.19"
   LT_VER_MINOR: "1.2"
   LT_VER_MAJOR: "1"
-  TAGS: "alpine3.17 alpine3.18 alpine3.19 alpine3.20 ubuntu20.04 ubuntu22.04 ubuntu23.10 ubuntu24.04"
+  TAGS: "alpine3.17 alpine3.18 alpine3.19 alpine3.20 ubuntu20.04 ubuntu22.04 ubuntu24.04 ubuntu24.10"
 
 jobs:
   alpine:
@@ -111,7 +111,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu22.04, ubuntu23.10, ubuntu24.04]
+        distro: [ubuntu20.04, ubuntu22.04, ubuntu24.04, ubuntu24.10]
     steps:
       -
         name: Checkout
