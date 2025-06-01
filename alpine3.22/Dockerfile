@@ -1,4 +1,4 @@
-FROM alpine:3.18 AS alpine
+FROM alpine:3.22 AS alpine
 
 # 
 # BUILD
