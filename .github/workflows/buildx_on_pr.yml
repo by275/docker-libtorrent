@@ -18,10 +18,10 @@ jobs:
       id: alpine
       with:
         filters: |
-          alpine3.18: '{.github,alpine3.18}/**'
           alpine3.19: '{.github,alpine3.19}/**'
           alpine3.20: '{.github,alpine3.20}/**'
           alpine3.21: '{.github,alpine3.21}/**'
+          alpine3.22: '{.github,alpine3.22}/**'
     - uses: dorny/paths-filter@v3
       id: ubuntu
       with:
