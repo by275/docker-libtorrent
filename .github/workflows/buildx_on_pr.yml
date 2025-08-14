@@ -36,6 +36,8 @@ jobs:
       - changes
     if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
@@ -78,6 +80,8 @@ jobs:
       - alpine
     if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
@@ -121,6 +125,8 @@ jobs:
       - changes
     if: ${{ needs.changes.outputs.ubuntu != '[]' && needs.changes.outputs.ubuntu != '' }}
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.ubuntu) }}
