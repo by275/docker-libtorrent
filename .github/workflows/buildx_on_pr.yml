@@ -29,7 +29,6 @@ jobs:
           ubuntu20.04: '{.github,ubuntu20.04}/**'
           ubuntu22.04: '{.github,ubuntu22.04}/**'
           ubuntu24.04: '{.github,ubuntu24.04}/**'
-          ubuntu24.10: '{.github,ubuntu24.10}/**'
 
   alpine:
     needs:

@@ -11,7 +11,7 @@ env:
   LT_VER: "1.2.20"
   LT_VER_MINOR: "1.2"
   LT_VER_MAJOR: "1"
-  TAGS: "alpine3.19 alpine3.20 alpine3.21 alpine3.22 ubuntu20.04 ubuntu22.04 ubuntu24.04 ubuntu24.10"
+  TAGS: "alpine3.19 alpine3.20 alpine3.21 alpine3.22 ubuntu20.04 ubuntu22.04 ubuntu24.04"
 
 jobs:
   alpine:
@@ -117,7 +117,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        distro: [ubuntu20.04, ubuntu22.04, ubuntu24.04, ubuntu24.10]
+        distro: [ubuntu20.04, ubuntu22.04, ubuntu24.04]
     steps:
       -
         name: Checkout
