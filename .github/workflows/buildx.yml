@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         distro: [alpine3.20, alpine3.21, alpine3.22, alpine3.23]
-        arch: [amd64, arm64, arm]
+        arch: [amd64, arm64]
     steps:
       -
         name: Checkout
@@ -93,32 +93,28 @@ jobs:
         run: |
           docker manifest create ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }} \
             ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm64
           docker manifest push ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
       - 
         name: Create manifest and push for ${{ env.LT_VER }}-${{ matrix.distro }}
         run: |
           docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }} \
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-arm
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-arm64
           docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
       - 
         name: Create manifest and push for ${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
         run: |
           docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }} \
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-arm
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-arm64
           docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
       - 
         name: Create manifest and push for ${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
         run: |
           docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }} \
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-arm64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-arm
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-arm64
           docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
 
   ubuntu:
@@ -162,7 +158,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
