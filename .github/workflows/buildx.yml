@@ -175,10 +175,6 @@ jobs:
       packages: write
     steps:
       -
-        name: Load Variables
-        run: |
-          echo "DATE=$(date -u +'%y%m%d')" >> $GITHUB_ENV
-      -
         name: Checkout
         uses: actions/checkout@v6
       -
@@ -189,15 +185,17 @@ jobs:
         uses: docker/setup-buildx-action@v3
       -
         name: Generate Release Assets
+        id: prep
         run: |
           chmod +x ./release.sh
           ./release.sh ${{ env.LT_VER }} "${{ env.TAGS }}"
+          echo "date=$(date -u +'%y%m%d')" >> $GITHUB_OUTPUT
       -
         name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ env.LT_VER }}-${{ env.DATE }}
-          name: libtorrent-${{ env.LT_VER }}-${{ env.DATE }}
+          tag: ${{ env.LT_VER }}-${{ steps.prep.outputs.date }}
+          name: libtorrent-${{ env.LT_VER }}-${{ steps.prep.outputs.date }}
           artifacts: "release/*.tar.gz"
           body: Auto-generated release
           draft: true
