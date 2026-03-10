@@ -113,7 +113,7 @@ jobs:
         run: |
           bash release.sh testing "${{ matrix.distro }}"
       - name: Upload Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.distro }}
           path: "release/*.tar.gz"
@@ -169,7 +169,7 @@ jobs:
         run: |
           bash release.sh testing "${{ matrix.distro }}"
       - name: Upload Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.distro }}
           path: "release/*.tar.gz"
