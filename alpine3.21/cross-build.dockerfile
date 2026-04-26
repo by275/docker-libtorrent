@@ -22,7 +22,7 @@ RUN \
 
 RUN \
     echo "**** clone source ****" && \
-    git clone https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LT_VER}" --depth 1
+    git clone --recurse-submodules https://github.com/arvidn/libtorrent.git /tmp/libtorrent -b "v${LT_VER}" --depth 1
 
 #
 # CROSS COMPILE
