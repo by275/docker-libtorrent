@@ -40,7 +40,6 @@ jobs:
     strategy:
       matrix:
         distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
-        arch: [amd64, arm64]
     steps:
       -
         name: Checkout
@@ -58,6 +57,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Cross Build and Load Artifacts
+        run: |
+          cd ${{ matrix.distro }}
+          docker build --build-arg LT_VER=${{ env.LT_VER }} -t lt-build:local -f cross-build.dockerfile .
+          docker run --rm -v ${PWD}/build:/build lt-build:local /bin/sh -c "rm -rf /build/* && mv /lt-build/* /build/"
       -
         name: Buildx and Push
         uses: docker/build-push-action@v7
@@ -65,49 +70,12 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-${{ matrix.arch }}
-          platforms: linux/${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
           provenance: false
-
-
-  alpine-release:
-    needs:
-      - changes
-      - alpine
-    if: ${{ needs.changes.outputs.alpine != '[]' && needs.changes.outputs.alpine != '' }}
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    strategy:
-      matrix:
-        distro: ${{ fromJSON(needs.changes.outputs.alpine) }}
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v6
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-      -
-        name: Set up Buildx
-        uses: docker/setup-buildx-action@v4
-      -
-        name: Login to ghcr.io
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - 
-        name: Create manifest and push for testing
-        run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}-arm64
-          docker manifest push ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}
       -
         name: Generate Release Assets
         run: |
