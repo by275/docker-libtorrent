@@ -1,10 +1,10 @@
 name: buildx
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - 'master'
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
@@ -21,7 +21,6 @@ jobs:
     strategy:
       matrix:
         distro: [alpine3.20, alpine3.21, alpine3.22, alpine3.23]
-        arch: [amd64, arm64]
     steps:
       -
         name: Checkout
@@ -40,17 +39,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
+        name: Cross Build and Load Artifacts
+        run: |
+          cd ${{ matrix.distro }}
+          docker build --build-arg LT_VER=${{ env.LT_VER }} -t lt-build:local -f cross-build.dockerfile .
+          docker run --rm -v ${PWD}/build:/build lt-build:local /bin/sh -c "rm -rf /build/* && mv /lt-build/* /build/"
+      -
         name: Buildx and Push
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
-          platforms: linux/${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
@@ -63,59 +67,9 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-${{ matrix.arch }}
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-${{ matrix.arch }}
-
-  alpine-release:
-    needs:
-      - alpine
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    strategy:
-      matrix:
-        distro: [alpine3.20, alpine3.21, alpine3.22, alpine3.23]
-    steps:
-      -
-        name: Set up Buildx
-        uses: docker/setup-buildx-action@v4
-      -
-        name: Login to ghcr.io
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - 
-        name: Create manifest and push for latest-${{ matrix.distro }}
-        run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}-arm64
-          docker manifest push ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
-      - 
-        name: Create manifest and push for ${{ env.LT_VER }}-${{ matrix.distro }}
-        run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}-arm64
-          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
-      - 
-        name: Create manifest and push for ${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
-        run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}-arm64
-          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
-      - 
-        name: Create manifest and push for ${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
-        run: |
-          docker manifest create ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }} \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-amd64 \
-            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}-arm64
-          docker manifest push ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
 
   ubuntu:
     runs-on: ubuntu-latest
@@ -154,7 +108,6 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
@@ -171,14 +124,13 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
 
   make-release:
     needs:
-      - alpine-release
+      - alpine
       - ubuntu
     runs-on: ubuntu-latest
     permissions:
