@@ -39,6 +39,7 @@ RUN \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="lib" \
         -Dpython-bindings=ON \
+        -Dpython-install-system-dir=ON \
         -Dboost-python-module-name="python${PYTHON_VERSION//./}" \
         "../" && \
     make -j$(nproc) && \
@@ -90,6 +91,7 @@ RUN \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="lib" \
         -Dpython-bindings=ON \
+        -Dpython-install-system-dir=ON \
         -Dboost-python-module-name="python${PYTHON_VERSION//./}" \
         -DPython3_EXECUTABLE=/usr/bin/python3 \
         -DPython3_INCLUDE_DIR=/sysroot/usr/include/python${PYTHON_VERSION} \
@@ -144,6 +146,7 @@ RUN \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="lib" \
         -Dpython-bindings=ON \
+        -Dpython-install-system-dir=ON \
         -Dboost-python-module-name="python${PYTHON_VERSION//./}" \
         -DPython3_EXECUTABLE=/usr/bin/python3 \
         -DPython3_INCLUDE_DIR=/sysroot/usr/include/python${PYTHON_VERSION} \

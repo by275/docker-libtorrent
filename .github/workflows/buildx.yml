@@ -51,6 +51,7 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
@@ -67,6 +68,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
@@ -108,6 +110,7 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
@@ -124,6 +127,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
+            ${{ env.IMAGE_NAME }}:latest-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
             ${{ env.IMAGE_NAME }}:${{ env.LT_VER_MAJOR }}-${{ matrix.distro }}
