@@ -18,7 +18,6 @@ jobs:
       id: alpine
       with:
         filters: |
-          alpine3.20: '{.github,alpine3.20}/**'
           alpine3.21: '{.github,alpine3.21}/**'
           alpine3.22: '{.github,alpine3.22}/**'
           alpine3.23: '{.github,alpine3.23}/**'
