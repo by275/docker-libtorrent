@@ -100,9 +100,64 @@ RUN \
     make DESTDIR=/libtorrent-build install && \
     rm -rf /libtorrent-build/usr/lib/cmake
 
+FROM build-base AS build-arm
+
+RUN \
+    echo "**** install armv7 sysroot ****" && \
+    mkdir -p /sysroot/etc/apk && \
+    cp /etc/apk/repositories /sysroot/etc/apk/repositories && \
+    apk --root /sysroot --arch armv7 --allow-untrusted --initdb add --no-cache \
+        gcc g++ \
+        musl-dev \
+        openssl-dev \
+        boost-dev \
+        boost-python3 \
+        python3-dev \
+        libstdc++ && \
+    echo "**** write cmake toolchain ****" && \
+    { \
+        echo "set(CMAKE_SYSTEM_NAME Linux)"; \
+        echo "set(CMAKE_SYSTEM_PROCESSOR armv7)"; \
+        echo "set(CMAKE_SYSROOT /sysroot)"; \
+        echo "set(CMAKE_C_COMPILER clang)"; \
+        echo "set(CMAKE_CXX_COMPILER clang++)"; \
+        echo "set(CMAKE_C_COMPILER_TARGET armv7-alpine-linux-musleabihf)"; \
+        echo "set(CMAKE_CXX_COMPILER_TARGET armv7-alpine-linux-musleabihf)"; \
+        echo "set(CMAKE_EXE_LINKER_FLAGS_INIT \"-fuse-ld=lld\")"; \
+        echo "set(CMAKE_SHARED_LINKER_FLAGS_INIT \"-fuse-ld=lld\")"; \
+        echo "set(CMAKE_MODULE_LINKER_FLAGS_INIT \"-fuse-ld=lld\")"; \
+        echo "set(CMAKE_FIND_ROOT_PATH /sysroot)"; \
+        echo "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)"; \
+        echo "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)"; \
+        echo "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)"; \
+        echo "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)"; \
+    } > /tmp/armv7-alpine-linux-musleabihf.cmake
+
+RUN \
+    echo "**** build libtorrent for armv7 ****" && \
+    PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str,sys.version_info[:2])))') && \
+    mkdir -p /tmp/libtorrent/_build-arm && \
+    cd /tmp/libtorrent/_build-arm && \
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=/tmp/armv7-alpine-linux-musleabihf.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="/usr" \
+        -DCMAKE_INSTALL_LIBDIR="lib" \
+        -Dpython-bindings=ON \
+        -Dboost-python-module-name="python${PYTHON_VERSION//./}" \
+        -DPython3_EXECUTABLE=/usr/bin/python3 \
+        -DPython3_INCLUDE_DIR=/sysroot/usr/include/python${PYTHON_VERSION} \
+        -DPython3_LIBRARY=/sysroot/usr/lib/libpython${PYTHON_VERSION}.so \
+        "../" && \
+    make -j$(nproc) && \
+    echo "**** install libtorrent for armv7 ****" && \
+    make DESTDIR=/libtorrent-build install && \
+    rm -rf /libtorrent-build/usr/lib/cmake
+
 #
 # RELEASE
 #
 FROM alpine
 COPY --from=build-amd64 /libtorrent-build/ /lt-build/amd64/
 COPY --from=build-arm64 /libtorrent-build/ /lt-build/arm64/
+COPY --from=build-arm /libtorrent-build/ /lt-build/arm/
