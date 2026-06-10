@@ -21,6 +21,7 @@ jobs:
           alpine3.21: '{.github,alpine3.21}/**'
           alpine3.22: '{.github,alpine3.22}/**'
           alpine3.23: '{.github,alpine3.23}/**'
+          alpine3.24: '{.github,alpine3.24}/**'
     - uses: dorny/paths-filter@v4
       id: ubuntu
       with:
