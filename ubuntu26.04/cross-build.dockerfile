@@ -31,6 +31,7 @@ RUN \
         curl \
         git \
         cmake \
+        make \
         libboost1.88-tools-dev
 
 # Ubuntu 26.04 only publishes the versioned Boost.Build tools package.
@@ -102,6 +103,8 @@ ENV TOOLCHAIN=aarch64-linux-gnu \
     ARCH=arm64 \
     BUILD_DEPS=crossbuild-essential-arm64 \
     BUILD_CONFIG="release cxxstd=17 crypto=openssl warnings=off toolset=gcc-arm64 address-model=64"
+ENV CC=${TOOLCHAIN}-gcc \
+    CXX=${TOOLCHAIN}-g++
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -153,6 +156,8 @@ ENV TOOLCHAIN=arm-linux-gnueabihf \
     ARCH=armhf \
     BUILD_DEPS=crossbuild-essential-armhf \
     BUILD_CONFIG="release cxxstd=17 crypto=openssl warnings=off toolset=gcc-armhf address-model=32"
+ENV CC=${TOOLCHAIN}-gcc \
+    CXX=${TOOLCHAIN}-g++
 
 RUN \
     echo "**** install build-deps ****" && \
