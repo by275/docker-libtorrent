@@ -31,6 +31,7 @@ RUN \
     apt-get install -yqq --no-install-recommends \
         curl \
         git \
+        cmake \
         libboost-tools-dev
 
 RUN \
@@ -47,7 +48,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ENV TOOLCHAIN=x86_64-linux-gnu \
     ARCH=amd64 \
     BUILD_DEPS=build-essential \
-    BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-amd64 address-model=64"
+    BUILD_CONFIG="release cxxstd=17 crypto=openssl warnings=off toolset=gcc-amd64 address-model=64"
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -98,7 +99,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ENV TOOLCHAIN=aarch64-linux-gnu \
     ARCH=arm64 \
     BUILD_DEPS=crossbuild-essential-arm64 \
-    BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-arm64 address-model=64"
+    BUILD_CONFIG="release cxxstd=17 crypto=openssl warnings=off toolset=gcc-arm64 address-model=64"
 
 RUN \
     echo "**** install build-deps ****" && \
@@ -149,7 +150,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ENV TOOLCHAIN=arm-linux-gnueabihf \
     ARCH=armhf \
     BUILD_DEPS=crossbuild-essential-armhf \
-    BUILD_CONFIG="release cxxstd=14 crypto=openssl warnings=off toolset=gcc-armhf address-model=32"
+    BUILD_CONFIG="release cxxstd=17 crypto=openssl warnings=off toolset=gcc-armhf address-model=32"
 
 RUN \
     echo "**** install build-deps ****" && \
