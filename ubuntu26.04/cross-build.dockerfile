@@ -61,7 +61,10 @@ RUN \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
         libboost-system-dev:${ARCH} \
-        libssl-dev:${ARCH}
+        libssl-dev:${ARCH} \
+        libjitterentropy3-dev:${ARCH} \
+        libzstd-dev:${ARCH} \
+        zlib1g-dev:${ARCH}
 
 RUN \
     echo "**** setup b2 user-config.jam ****" && \
@@ -82,6 +85,7 @@ RUN \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
     b2 -j$(nproc) ${BUILD_CONFIG} \
+        linkflags="-l:libjitterentropy.a -lz -lzstd" \
         libtorrent-link=shared \
         boost-link=shared \
         stage_module \
@@ -114,7 +118,10 @@ RUN \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
         libboost-system-dev:${ARCH} \
-        libssl-dev:${ARCH}
+        libssl-dev:${ARCH} \
+        libjitterentropy3-dev:${ARCH} \
+        libzstd-dev:${ARCH} \
+        zlib1g-dev:${ARCH}
 
 RUN \
     echo "**** setup b2 user-config.jam ****" && \
@@ -135,6 +142,7 @@ RUN \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
     b2 -j$(nproc) ${BUILD_CONFIG} \
+        linkflags="-l:libjitterentropy.a -lz -lzstd" \
         libtorrent-link=shared \
         boost-link=shared \
         stage_module \
@@ -167,7 +175,10 @@ RUN \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
         libboost-system-dev:${ARCH} \
-        libssl-dev:${ARCH}
+        libssl-dev:${ARCH} \
+        libjitterentropy3-dev:${ARCH} \
+        libzstd-dev:${ARCH} \
+        zlib1g-dev:${ARCH}
 
 RUN \
     echo "**** setup b2 user-config.jam ****" && \
@@ -188,6 +199,7 @@ RUN \
     echo "**** build python-bindings ****" && \
     cd /tmp/libtorrent/bindings/python && \
     b2 -j$(nproc) ${BUILD_CONFIG} \
+        linkflags="-l:libjitterentropy.a -lz -lzstd" \
         libtorrent-link=shared \
         boost-link=shared \
         stage_module \
