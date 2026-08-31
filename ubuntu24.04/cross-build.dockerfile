@@ -54,6 +54,7 @@ RUN \
     echo "**** install build-deps ****" && \
     apt-get install -yqq --no-install-recommends \
         ${BUILD_DEPS} \
+        libbz2-1.0:${ARCH} \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
@@ -107,6 +108,7 @@ RUN \
     echo "**** install build-deps ****" && \
     apt-get install -yqq --no-install-recommends \
         ${BUILD_DEPS} \
+        libbz2-1.0:${ARCH} \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
@@ -160,6 +162,7 @@ RUN \
     echo "**** install build-deps ****" && \
     apt-get install -yqq --no-install-recommends \
         ${BUILD_DEPS} \
+        libbz2-1.0:${ARCH} \
         python3-all-dev:${ARCH} \
         libboost-dev:${ARCH} \
         libboost-python-dev:${ARCH} \
