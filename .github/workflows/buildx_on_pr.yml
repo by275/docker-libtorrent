@@ -6,6 +6,15 @@ on:
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
   LT_VER: "2.0.14"
+  LT_VER_MINOR: "2.0"
+
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   changes:
@@ -65,7 +74,7 @@ jobs:
             --file cross-build.dockerfile \
             --tag lt-build:local \
             --build-arg "LT_VER=${{ env.LT_VER }}" \
-            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ matrix.distro }}" \
+            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}" \
             --load \
             .
           docker run --rm -v "$PWD/build:/build" lt-build:local /bin/sh -c "rm -rf /build/* && mv /lt-build/* /build/"
@@ -76,17 +85,17 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:testing-pr-${{ github.event.pull_request.number }}-${{ matrix.distro }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ matrix.distro }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
           provenance: false
       -
         name: Generate Release Assets
         run: |
-          bash release.sh testing "${{ matrix.distro }}"
+          bash release.sh "testing-pr-${{ github.event.pull_request.number }}" "${{ matrix.distro }}"
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
@@ -128,7 +137,7 @@ jobs:
             --file cross-build.dockerfile \
             --tag lt-build:local \
             --build-arg "LT_VER=${{ env.LT_VER }}" \
-            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ matrix.distro }}" \
+            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}" \
             --load \
             .
           docker run --rm -v "$PWD/build:/build" lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
@@ -139,17 +148,17 @@ jobs:
           context: ${{ matrix.distro }}/.
           file: ${{ matrix.distro }}/Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:testing-${{ matrix.distro }}
+            ${{ env.IMAGE_NAME }}:testing-pr-${{ github.event.pull_request.number }}-${{ matrix.distro }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ matrix.distro }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
           provenance: false
       -
         name: Generate Release Assets
         run: |
-          bash release.sh testing "${{ matrix.distro }}"
+          bash release.sh "testing-pr-${{ github.event.pull_request.number }}" "${{ matrix.distro }}"
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
