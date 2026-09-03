@@ -6,6 +6,14 @@ on:
       - 'master'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
   LT_VER: "2.1.1"
@@ -46,8 +54,8 @@ jobs:
             --file cross-build.dockerfile \
             --tag lt-build:local \
             --build-arg "LT_VER=${{ env.LT_VER }}" \
-            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ matrix.distro }}" \
-            --cache-to "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ matrix.distro }},mode=max" \
+            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}" \
+            --cache-to "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }},mode=max" \
             --load \
             .
           docker run --rm -v "$PWD/build:/build" lt-build:local /bin/sh -c "rm -rf /build/* && mv /lt-build/* /build/"
@@ -66,8 +74,8 @@ jobs:
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ matrix.distro }}
-          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ matrix.distro }},mode=max
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }},mode=max
           provenance: false
       -
         name: Send Notification
@@ -114,8 +122,8 @@ jobs:
             --file cross-build.dockerfile \
             --tag lt-build:local \
             --build-arg "LT_VER=${{ env.LT_VER }}" \
-            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ matrix.distro }}" \
-            --cache-to "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ matrix.distro }},mode=max" \
+            --cache-from "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}" \
+            --cache-to "type=registry,ref=${{ env.IMAGE_NAME }}:cross-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }},mode=max" \
             --load \
             .
           docker run --rm -v "$PWD/build:/build" lt-build:local /bin/bash -c "rm -rf /build/* && mv /lt-build/* /build/"
@@ -134,8 +142,8 @@ jobs:
           push: true
           build-args: |
             LT_VER=${{ env.LT_VER }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ matrix.distro }}
-          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ matrix.distro }},mode=max
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }}
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:image-cache-${{ env.LT_VER_MINOR }}-${{ matrix.distro }},mode=max
           provenance: false
       -
         name: Send Notification
