@@ -16,7 +16,7 @@ defaults:
 
 env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
-  LT_VER: "2.0.14"
+  LT_VER: "2.0.15"
   LT_VER_MINOR: "2.0"
   TAGS: "alpine3.21 alpine3.22 alpine3.23 alpine3.24 ubuntu22.04 ubuntu24.04 ubuntu26.04"
 
