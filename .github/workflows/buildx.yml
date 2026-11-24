@@ -18,7 +18,7 @@ env:
   IMAGE_NAME: ghcr.io/by275/libtorrent
   LT_VER: "2.0.16"
   LT_VER_MINOR: "2.0"
-  TAGS: "alpine3.21 alpine3.22 alpine3.23 alpine3.24 ubuntu22.04 ubuntu24.04 ubuntu26.04"
+  TAGS: "alpine3.22 alpine3.23 alpine3.24 ubuntu22.04 ubuntu24.04 ubuntu26.04"
 
 jobs:
   alpine:
@@ -27,7 +27,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        distro: [alpine3.21, alpine3.22, alpine3.23, alpine3.24]
+        distro: [alpine3.22, alpine3.23, alpine3.24]
     steps:
       -
         name: Checkout
